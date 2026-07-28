@@ -1,4 +1,4 @@
-<!-- Scout v0.1.1 -->
+<!-- Scout v0.2.0 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,1333 +6,673 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <meta name="theme-color" content="#0f1923">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Scout">
   <title>Scout</title>
   <style>
-    :root {
-      --bg:        #0f1923;
-      --surface:   #1a2535;
-      --surface2:  #243044;
-      --border:    #2e3f55;
-      --accent:    #3b82f6;
-      --accent-dim:#1d4ed8;
-      --warn:      #f59e0b;
-      --warn-bg:   #1c1500;
-      --success:   #22c55e;
-      --danger:    #ef4444;
-      --text:      #e8edf4;
-      --muted:     #7a90ab;
-      --radius:    10px;
-      --font:      -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    }
-
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: var(--font);
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100dvh;
-      display: flex;
-      flex-direction: column;
-    }
-
-    /* ── HEADER ── */
-    header {
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      padding: 0 16px;
-      height: 56px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-    .logo {
-      font-size: 18px;
-      font-weight: 700;
-      letter-spacing: -0.5px;
-      color: var(--text);
-    }
-    .logo span { color: var(--accent); }
-    .version { font-size: 11px; color: var(--muted); margin-left: 8px; }
-
-    /* ── NAV ── */
-    nav {
-      display: flex;
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      padding: 0 16px;
-      gap: 4px;
-    }
-    .nav-btn {
-      padding: 10px 16px;
-      background: none;
-      border: none;
-      border-bottom: 2px solid transparent;
-      color: var(--muted);
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: color 0.15s, border-color 0.15s;
-      white-space: nowrap;
-    }
-    .nav-btn.active {
-      color: var(--accent);
-      border-bottom-color: var(--accent);
-    }
-    .nav-btn:hover:not(.active) { color: var(--text); }
-
-    /* ── MAIN ── */
-    main {
-      flex: 1;
-      padding: 20px 16px;
-      max-width: 680px;
-      width: 100%;
-      margin: 0 auto;
-    }
-
-    /* ── VIEWS ── */
-    .view { display: none; }
-    .view.active { display: block; }
-
-    /* ── CARDS ── */
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 20px;
-      margin-bottom: 16px;
-    }
-    .card-title {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.6px;
-      margin-bottom: 16px;
-    }
-
-    /* ── FORM ── */
-    .field { margin-bottom: 14px; }
-    label {
-      display: block;
-      font-size: 13px;
-      color: var(--muted);
-      margin-bottom: 5px;
-      font-weight: 500;
-    }
-    label .req { color: var(--danger); margin-left: 2px; }
-    input[type=text],
-    input[type=email],
-    input[type=tel],
-    textarea,
-    select {
-      width: 100%;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      color: var(--text);
-      font-size: 15px;
-      padding: 10px 12px;
-      outline: none;
-      font-family: var(--font);
-      transition: border-color 0.15s;
-      -webkit-appearance: none;
-    }
-    input[type=text]:focus,
-    input[type=email]:focus,
-    input[type=tel]:focus,
-    textarea:focus,
-    select:focus { border-color: var(--accent); }
-    input[type=text]::placeholder,
-    input[type=email]::placeholder,
-    input[type=tel]::placeholder,
-    textarea::placeholder { color: var(--muted); }
-    textarea { resize: vertical; min-height: 80px; }
-    select option { background: var(--surface2); }
-
-    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .row-3 { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 12px; }
-
-    /* ── BUTTONS ── */
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      padding: 11px 20px;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      border: none;
-      transition: opacity 0.15s, transform 0.1s;
-      font-family: var(--font);
-    }
-    .btn:active { transform: scale(0.98); }
-    .btn-primary { background: var(--accent); color: #fff; }
-    .btn-primary:hover { background: var(--accent-dim); }
-    .btn-ghost { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
-    .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
-    .btn-danger { background: var(--danger); color: #fff; }
-    .btn-full { width: 100%; }
-    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
-
-    .btn-row {
-      display: flex;
-      gap: 10px;
-      margin-top: 20px;
-    }
-
-    /* ── SLOT PICKER ── */
-    #slot-view .day-header {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin: 16px 0 8px;
-    }
-    #slot-view .day-header:first-of-type { margin-top: 0; }
-
-    .slot-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-      gap: 8px;
-      margin-bottom: 4px;
-    }
-    .slot-btn {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      color: var(--text);
-      font-size: 14px;
-      font-weight: 500;
-      padding: 10px 6px;
-      cursor: pointer;
-      text-align: center;
-      transition: border-color 0.15s, background 0.15s;
-      font-family: var(--font);
-    }
-    .slot-btn:hover:not(.taken) { border-color: var(--accent); color: var(--accent); }
-    .slot-btn.selected { background: var(--accent); border-color: var(--accent); color: #fff; }
-    .slot-btn.taken {
-      opacity: 0.35;
-      cursor: not-allowed;
-      text-decoration: line-through;
-    }
-
-    .slots-loading {
-      color: var(--muted);
-      font-size: 14px;
-      padding: 20px 0;
-      text-align: center;
-    }
-
-    /* ── GEO WARNING ── */
-    .geo-warning {
-      background: var(--warn-bg);
-      border: 1px solid var(--warn);
-      border-radius: var(--radius);
-      padding: 14px 16px;
-      margin-bottom: 16px;
-      display: none;
-    }
-    .geo-warning.visible { display: block; }
-    .geo-warning-title {
-      color: var(--warn);
-      font-size: 14px;
-      font-weight: 700;
-      margin-bottom: 6px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .geo-warning p {
-      font-size: 13px;
-      color: var(--text);
-      line-height: 1.5;
-    }
-    .geo-warning .clash-list {
-      margin-top: 8px;
-      font-size: 13px;
-      color: var(--muted);
-    }
-    .geo-warning .clash-list li {
-      list-style: none;
-      padding: 3px 0;
-    }
-    .geo-warning .clash-list li::before { content: '↗ '; color: var(--warn); }
-
-    /* ── CONFIRM VIEW ── */
-    .confirm-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      padding: 10px 0;
-      border-bottom: 1px solid var(--border);
-      font-size: 14px;
-      gap: 12px;
-    }
-    .confirm-row:last-child { border-bottom: none; }
-    .confirm-label { color: var(--muted); flex-shrink: 0; width: 120px; }
-    .confirm-value { color: var(--text); text-align: right; font-weight: 500; }
-
-    /* ── DASHBOARD ── */
-    .dash-controls {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 16px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-    .dash-controls select { flex: 1; min-width: 140px; }
-
-    .booking-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 14px 16px;
-      margin-bottom: 10px;
-      display: flex;
-      align-items: flex-start;
-      gap: 14px;
-      cursor: pointer;
-      transition: border-color 0.15s;
-    }
-    .booking-card:hover { border-color: var(--accent); }
-    .booking-time {
-      background: var(--surface2);
-      border-radius: 8px;
-      padding: 8px 10px;
-      text-align: center;
-      min-width: 70px;
-      flex-shrink: 0;
-    }
-    .booking-time-hour { font-size: 18px; font-weight: 700; line-height: 1; }
-    .booking-time-date { font-size: 11px; color: var(--muted); margin-top: 3px; }
-    .booking-info { flex: 1; min-width: 0; }
-    .booking-name { font-size: 15px; font-weight: 600; margin-bottom: 3px; }
-    .booking-address { font-size: 13px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .booking-source {
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--accent);
-      background: #1a2d50;
-      border-radius: 4px;
-      padding: 2px 6px;
-      margin-top: 5px;
-      display: inline-block;
-    }
-    .booking-status {
-      font-size: 12px;
-      font-weight: 600;
-      padding: 3px 8px;
-      border-radius: 20px;
-      flex-shrink: 0;
-      align-self: flex-start;
-    }
-    .status-lead { background: #1a2d50; color: var(--accent); }
-    .status-survey_booked { background: #14291a; color: var(--success); }
-    .status-quote_sent { background: #1c1500; color: var(--warn); }
-
-    .empty-state {
-      text-align: center;
-      padding: 48px 20px;
-      color: var(--muted);
-    }
-    .empty-state svg { margin-bottom: 12px; opacity: 0.4; }
-    .empty-state p { font-size: 14px; }
-
-    /* ── SETTINGS ── */
-    .setting-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 14px 0;
-      border-bottom: 1px solid var(--border);
-      gap: 12px;
-    }
-    .setting-row:last-child { border-bottom: none; }
-    .setting-label { font-size: 14px; font-weight: 500; }
-    .setting-desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
-    .setting-row input[type=number],
-    .setting-row input[type=time] {
-      width: 100px;
-      text-align: center;
-    }
-
-    /* ── TOAST ── */
-    #toast {
-      position: fixed;
-      bottom: 24px;
-      left: 50%;
-      transform: translateX(-50%) translateY(80px);
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 12px 20px;
-      font-size: 14px;
-      font-weight: 500;
-      z-index: 999;
-      transition: transform 0.25s ease;
-      max-width: 340px;
-      text-align: center;
-      pointer-events: none;
-    }
-    #toast.show { transform: translateX(-50%) translateY(0); }
-    #toast.success { border-color: var(--success); color: var(--success); }
-    #toast.error { border-color: var(--danger); color: var(--danger); }
-    #toast.warn { border-color: var(--warn); color: var(--warn); }
-
-    /* ── MODAL ── */
-    .modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.6);
-      z-index: 200;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 16px;
-    }
-    .modal-overlay.open { display: flex; }
-    .modal {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 24px;
-      width: 100%;
-      max-width: 480px;
-      max-height: 90dvh;
-      overflow-y: auto;
-    }
-    .modal-title {
-      font-size: 17px;
-      font-weight: 700;
-      margin-bottom: 16px;
-    }
-    .modal-close {
-      float: right;
-      background: none;
-      border: none;
-      color: var(--muted);
-      font-size: 20px;
-      cursor: pointer;
-      line-height: 1;
-      margin-top: -4px;
-    }
-
-    /* ── STEP INDICATOR ── */
-    .steps {
-      display: flex;
-      align-items: center;
-      gap: 0;
-      margin-bottom: 20px;
-    }
-    .step {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 13px;
-      color: var(--muted);
-    }
-    .step.active { color: var(--accent); }
-    .step.done { color: var(--success); }
-    .step-num {
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 11px;
-      font-weight: 700;
-      flex-shrink: 0;
-    }
-    .step.active .step-num { background: var(--accent); border-color: var(--accent); color: #fff; }
-    .step.done .step-num { background: var(--success); border-color: var(--success); color: #fff; }
-    .step-line { flex: 1; height: 1px; background: var(--border); margin: 0 6px; }
-
-    /* ── CALENDAR STRIP ── */
-    .cal-strip {
-      display: flex;
-      gap: 8px;
-      overflow-x: auto;
-      padding-bottom: 4px;
-      margin-bottom: 16px;
-      scrollbar-width: none;
-    }
-    .cal-strip::-webkit-scrollbar { display: none; }
-    .cal-day {
-      flex-shrink: 0;
-      width: 52px;
-      padding: 8px 4px;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      background: var(--surface2);
-      text-align: center;
-      cursor: pointer;
-      transition: border-color 0.15s, background 0.15s;
-    }
-    .cal-day:hover { border-color: var(--accent); }
-    .cal-day.selected { background: var(--accent); border-color: var(--accent); }
-    .cal-day-name { font-size: 11px; color: var(--muted); text-transform: uppercase; }
-    .cal-day.selected .cal-day-name { color: rgba(255,255,255,0.75); }
-    .cal-day-num { font-size: 18px; font-weight: 700; line-height: 1.3; }
-    .cal-day-count { font-size: 10px; color: var(--muted); margin-top: 2px; }
-    .cal-day.selected .cal-day-count { color: rgba(255,255,255,0.75); }
-    .cal-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); margin: 3px auto 0; }
-    .cal-day.selected .cal-dot { background: #fff; }
-
-    @media (min-width: 600px) {
-      main { padding: 24px 20px; }
-      .row-3 { grid-template-columns: 2fr 1fr 1fr; }
-    }
+    :root{--bg:#0f1923;--surface:#1a2535;--surface2:#243044;--border:#2e3f55;--accent:#3b82f6;--accent-dim:#1d4ed8;--warn:#f59e0b;--warn-bg:#1c1500;--success:#22c55e;--danger:#ef4444;--danger-bg:#2a0a0a;--text:#e8edf4;--muted:#7a90ab;--radius:10px;--font:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100dvh;display:flex;flex-direction:column}
+    header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 16px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+    .logo{font-size:18px;font-weight:700;letter-spacing:-0.5px}.logo span{color:var(--accent)}
+    .version{font-size:11px;color:var(--muted);margin-left:8px}
+    nav{display:flex;background:var(--surface);border-bottom:1px solid var(--border);padding:0 16px;gap:4px;overflow-x:auto;scrollbar-width:none}
+    nav::-webkit-scrollbar{display:none}
+    .nav-btn{padding:10px 16px;background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);font-size:14px;font-weight:500;cursor:pointer;transition:color .15s,border-color .15s;white-space:nowrap}
+    .nav-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
+    .nav-btn:hover:not(.active){color:var(--text)}
+    main{flex:1;padding:20px 16px;max-width:780px;width:100%;margin:0 auto}
+    .view{display:none}.view.active{display:block}
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px}
+    .card-title{font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:16px}
+    .field{margin-bottom:14px}
+    label{display:block;font-size:13px;color:var(--muted);margin-bottom:5px;font-weight:500}
+    label .req{color:var(--danger);margin-left:2px}
+    input[type=text],input[type=email],input[type=tel],textarea,select{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:15px;padding:10px 12px;outline:none;font-family:var(--font);transition:border-color .15s;-webkit-appearance:none}
+    input:focus,textarea:focus,select:focus{border-color:var(--accent)}
+    input::placeholder,textarea::placeholder{color:var(--muted)}
+    textarea{resize:vertical;min-height:80px}
+    select option{background:var(--surface2)}
+    .row-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:11px 20px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:opacity .15s,transform .1s;font-family:var(--font)}
+    .btn:active{transform:scale(.98)}
+    .btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:var(--accent-dim)}
+    .btn-ghost{background:var(--surface2);color:var(--text);border:1px solid var(--border)}.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+    .btn-warn{background:var(--warn);color:#000}
+    .btn-full{width:100%}.btn:disabled{opacity:.45;cursor:not-allowed}.btn-sm{padding:7px 12px;font-size:13px}
+    .btn-row{display:flex;gap:10px;margin-top:20px}
+    .steps{display:flex;align-items:center;margin-bottom:20px}
+    .step{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted)}.step.active{color:var(--accent)}.step.done{color:var(--success)}
+    .step-num{width:22px;height:22px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+    .step.active .step-num{background:var(--accent);border-color:var(--accent);color:#fff}
+    .step.done .step-num{background:var(--success);border-color:var(--success);color:#fff}
+    .step-line{flex:1;height:1px;background:var(--border);margin:0 6px}
+    .cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:8px;flex-wrap:wrap}
+    .cal-header-left{display:flex;align-items:center;gap:8px}
+    .cal-title{font-size:18px;font-weight:700}
+    .cal-view-toggle{display:flex;background:var(--surface2);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+    .cal-view-btn{padding:7px 14px;background:none;border:none;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font)}.cal-view-btn.active{background:var(--accent);color:#fff}
+    .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+    .cal-day-head{background:var(--surface2);padding:8px 4px;text-align:center;font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase}
+    .cal-cell{background:var(--surface);min-height:80px;padding:6px;cursor:pointer;transition:background .15s}
+    .cal-cell:hover{background:var(--surface2)}.cal-cell.other-month{opacity:.4}.cal-cell.today{background:#1a2d50}
+    .cal-date{font-size:13px;font-weight:600;margin-bottom:4px}
+    .cal-cell.today .cal-date{background:var(--accent);color:#fff;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+    .cal-event{font-size:11px;background:var(--accent);color:#fff;border-radius:4px;padding:2px 5px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
+    .cal-event.past{background:var(--surface2);color:var(--muted)}
+    .week-grid{display:grid;grid-template-columns:50px repeat(7,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+    .week-head{background:var(--surface2);padding:8px 4px;text-align:center;font-size:12px;font-weight:600;color:var(--muted)}.week-head.today-head{color:var(--accent)}
+    .week-time{background:var(--surface);padding:4px 6px;text-align:right;font-size:11px;color:var(--muted)}
+    .week-cell{background:var(--surface);min-height:40px;position:relative}.week-cell.today-col{background:#1a2535}
+    .week-event{background:var(--accent);border-radius:4px;font-size:11px;color:#fff;padding:2px 4px;margin:1px;cursor:pointer;display:block}
+    .day-grid{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+    .day-row{display:grid;grid-template-columns:60px 1fr;min-height:48px;border-bottom:1px solid var(--border)}.day-row:last-child{border-bottom:none}
+    .day-time{background:var(--surface2);padding:8px;font-size:12px;color:var(--muted);text-align:right}
+    .day-slot{background:var(--surface);padding:4px 8px}
+    .day-event{background:var(--accent);border-radius:6px;padding:6px 10px;margin:2px 0;font-size:13px;color:#fff;cursor:pointer}.day-event:hover{background:var(--accent-dim)}
+    .cal-strip{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:16px;scrollbar-width:none}.cal-strip::-webkit-scrollbar{display:none}
+    .cal-day-pill{flex-shrink:0;width:56px;padding:8px 4px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);text-align:center;cursor:pointer;transition:border-color .15s,background .15s}
+    .cal-day-pill:hover{border-color:var(--accent)}.cal-day-pill.selected{background:var(--accent);border-color:var(--accent)}
+    .cal-day-pill-name{font-size:11px;color:var(--muted);text-transform:uppercase}.cal-day-pill.selected .cal-day-pill-name{color:rgba(255,255,255,.75)}
+    .cal-day-pill-num{font-size:18px;font-weight:700;line-height:1.3}
+    .cal-day-pill-count{font-size:10px;color:var(--muted);margin-top:2px}.cal-day-pill.selected .cal-day-pill-count{color:rgba(255,255,255,.75)}
+    .slot-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;margin-bottom:4px}
+    .slot-btn{background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-weight:500;padding:10px 6px;cursor:pointer;text-align:center;transition:border-color .15s,background .15s;font-family:var(--font)}
+    .slot-btn:hover:not(.taken){border-color:var(--accent);color:var(--accent)}.slot-btn.selected{background:var(--accent);border-color:var(--accent);color:#fff}
+    .slot-btn.taken{background:var(--danger-bg);border-color:var(--danger);color:var(--danger);cursor:not-allowed;font-weight:700}
+    .slots-loading{color:var(--muted);font-size:14px;padding:20px 0;text-align:center}
+    .geo-warning{background:var(--warn-bg);border:1px solid var(--warn);border-radius:var(--radius);padding:14px 16px;margin-bottom:16px;display:none}.geo-warning.visible{display:block}
+    .geo-warning-title{color:var(--warn);font-size:14px;font-weight:700;margin-bottom:6px}
+    .geo-warning p{font-size:13px;color:var(--text);line-height:1.5}
+    .geo-clash-list{margin-top:8px;font-size:13px;color:var(--muted)}.geo-clash-list li{list-style:none;padding:3px 0}
+    .confirm-row{display:flex;justify-content:space-between;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--border);font-size:14px;gap:12px}.confirm-row:last-child{border-bottom:none}
+    .confirm-label{color:var(--muted);flex-shrink:0;width:130px}.confirm-value{color:var(--text);text-align:right;font-weight:500}
+    .dash-controls{display:flex;gap:10px;margin-bottom:16px;align-items:center;flex-wrap:wrap}
+    .booking-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px;display:flex;align-items:flex-start;gap:14px;transition:border-color .15s;cursor:pointer}.booking-card:hover{border-color:var(--accent)}
+    .booking-time{background:var(--surface2);border-radius:8px;padding:8px 10px;text-align:center;min-width:70px;flex-shrink:0}
+    .booking-time-hour{font-size:18px;font-weight:700;line-height:1}.booking-time-date{font-size:11px;color:var(--muted);margin-top:3px}
+    .booking-info{flex:1;min-width:0}.booking-name{font-size:15px;font-weight:600;margin-bottom:3px}
+    .booking-address{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .booking-source{font-size:11px;font-weight:600;color:var(--accent);background:#1a2d50;border-radius:4px;padding:2px 6px;margin-top:5px;display:inline-block}
+    .booking-actions{display:flex;gap:6px;flex-shrink:0;flex-direction:column;align-items:flex-end}
+    .booking-status{font-size:12px;font-weight:600;padding:3px 8px;border-radius:20px}
+    .status-lead{background:#1a2d50;color:var(--accent)}.status-survey_booked{background:#14291a;color:var(--success)}.status-quote_sent{background:#1c1500;color:var(--warn)}
+    .empty-state{text-align:center;padding:48px 20px;color:var(--muted)}.empty-state p{font-size:14px}
+    .month-nav{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+    .month-nav-title{font-size:16px;font-weight:700;flex:1;text-align:center}
+    .month-nav-btn{background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:7px 14px;cursor:pointer;font-family:var(--font);font-size:14px;font-weight:600}.month-nav-btn:hover{border-color:var(--accent);color:var(--accent)}
+    .setting-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border);gap:12px}.setting-row:last-child{border-bottom:none}
+    .setting-label{font-size:14px;font-weight:500}.setting-desc{font-size:12px;color:var(--muted);margin-top:2px}
+    .setting-row input[type=number],.setting-row input[type=time]{width:90px;text-align:center}
+    #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 20px;font-size:14px;font-weight:500;z-index:999;transition:transform .25s ease;max-width:340px;text-align:center;pointer-events:none}
+    #toast.show{transform:translateX(-50%) translateY(0)}#toast.success{border-color:var(--success);color:var(--success)}#toast.error{border-color:var(--danger);color:var(--danger)}#toast.warn{border-color:var(--warn);color:var(--warn)}
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;display:none;align-items:center;justify-content:center;padding:16px}.modal-overlay.open{display:flex}
+    .modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;width:100%;max-width:480px;max-height:90dvh;overflow-y:auto}
+    .modal-title{font-size:17px;font-weight:700;margin-bottom:16px}.modal-close{float:right;background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;line-height:1;margin-top:-4px}
+    @media(min-width:600px){main{padding:24px 20px}}
   </style>
 </head>
 <body>
-
 <header>
-  <div style="display:flex;align-items:center;gap:4px;">
-    <div class="logo">Scout<span>.</span></div>
-    <span class="version">v0.1.1</span>
-  </div>
-  <div style="font-size:12px;color:var(--muted);" id="header-status"></div>
+  <div style="display:flex;align-items:center;gap:4px"><div class="logo">Scout<span>.</span></div><span class="version">v0.2.0</span></div>
+  <div id="header-status" style="font-size:12px;color:var(--muted)">Connected</div>
 </header>
-
 <nav>
   <button class="nav-btn active" data-view="new-lead">New Lead</button>
-  <button class="nav-btn" data-view="dashboard">Bookings</button>
+  <button class="nav-btn" data-view="calendar">Calendar</button>
+  <button class="nav-btn" data-view="bookings">Bookings</button>
+  <button class="nav-btn" data-view="history">History</button>
   <button class="nav-btn" data-view="settings">Settings</button>
 </nav>
-
 <main>
-
-  <!-- ── NEW LEAD VIEW ── -->
-  <div class="view active" id="view-new-lead">
-
-    <div class="steps" id="step-indicator">
-      <div class="step active" data-step="1">
-        <div class="step-num">1</div>
-        <span>Details</span>
+<div class="view active" id="view-new-lead">
+  <div class="steps">
+    <div class="step active" data-step="1"><div class="step-num">1</div><span>Details</span></div>
+    <div class="step-line"></div>
+    <div class="step" data-step="2"><div class="step-num">2</div><span>Slot</span></div>
+    <div class="step-line"></div>
+    <div class="step" data-step="3"><div class="step-num">3</div><span>Confirm</span></div>
+  </div>
+  <div id="step-1">
+    <div class="card">
+      <div class="card-title">Customer Details</div>
+      <div class="row-2">
+        <div class="field"><label>First name <span class="req">*</span></label><input type="text" id="f-first" placeholder="Mary" autocomplete="off"></div>
+        <div class="field"><label>Surname <span class="req">*</span></label><input type="text" id="f-last" placeholder="Smith" autocomplete="off"></div>
       </div>
-      <div class="step-line"></div>
-      <div class="step" data-step="2">
-        <div class="step-num">2</div>
-        <span>Slot</span>
+      <div class="field"><label>Address <span class="req">*</span></label><input type="text" id="f-address" placeholder="24 High Street" autocomplete="off"></div>
+      <div class="row-2">
+        <div class="field"><label>Town</label><input type="text" id="f-town" placeholder="Kilmarnock" autocomplete="off"></div>
+        <div class="field"><label>Postcode <span class="req">*</span></label><input type="text" id="f-postcode" placeholder="KA1 1AA" autocomplete="off" style="text-transform:uppercase"></div>
       </div>
-      <div class="step-line"></div>
-      <div class="step" data-step="3">
-        <div class="step-num">3</div>
-        <span>Confirm</span>
+      <div class="row-2">
+        <div class="field"><label>Email</label><input type="email" id="f-email" placeholder="mary@example.com" autocomplete="off"></div>
+        <div class="field"><label>Phone <span class="req">*</span></label><input type="tel" id="f-phone" placeholder="07700 900000" autocomplete="off"></div>
       </div>
     </div>
-
-    <!-- STEP 1: Lead form -->
-    <div id="step-1">
-      <div class="card">
-        <div class="card-title">Customer Details</div>
-        <div class="row-2">
-          <div class="field">
-            <label>First name <span class="req">*</span></label>
-            <input type="text" id="f-first" placeholder="Mary" autocomplete="off">
-          </div>
-          <div class="field">
-            <label>Surname <span class="req">*</span></label>
-            <input type="text" id="f-last" placeholder="Smith" autocomplete="off">
-          </div>
-        </div>
-        <div class="field">
-          <label>Address <span class="req">*</span></label>
-          <input type="text" id="f-address" placeholder="24 High Street" autocomplete="off">
-        </div>
-        <div class="row-3">
-          <div class="field">
-            <label>Town</label>
-            <input type="text" id="f-town" placeholder="Kilmarnock" autocomplete="off">
-          </div>
-          <div class="field">
-            <label>Postcode <span class="req">*</span></label>
-            <input type="text" id="f-postcode" placeholder="KA1 1AA" autocomplete="off" style="text-transform:uppercase;">
-          </div>
-        </div>
-        <div class="row-2">
-          <div class="field">
-            <label>Email</label>
-            <input type="email" id="f-email" placeholder="mary@example.com" autocomplete="off">
-          </div>
-          <div class="field">
-            <label>Phone <span class="req">*</span></label>
-            <input type="tel" id="f-phone" placeholder="07700 900000" autocomplete="off">
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-title">Lead Source</div>
-        <div class="field">
-          <label>How did they contact us? <span class="req">*</span></label>
+    <div class="card">
+      <div class="card-title">Lead Info</div>
+      <div class="row-2">
+        <div class="field"><label>Lead source <span class="req">*</span></label>
           <select id="f-source">
-            <option value="">— Select —</option>
-            <option value="showroom_walkin">Showroom Walk-in</option>
-            <option value="phone_call">Phone Call</option>
-            <option value="dms_phone">DMS Phone Call</option>
-            <option value="facebook">Facebook</option>
-            <option value="web_fb">Web (Facebook Ad)</option>
-            <option value="web_organic">Web (Organic)</option>
-            <option value="web_paid">Web (Paid Ads)</option>
-            <option value="referral">Referral</option>
-            <option value="return_customer">Return Customer</option>
-            <option value="family_friends">Family / Friends</option>
+            <option value="">-- Select --</option>
+            <option value="Showroom Walk-In">Showroom Walk-In</option>
+            <option value="Phone Call">Phone Call</option>
+            <option value="DMS Phone Call">DMS Phone Call</option>
+            <option value="Facebook Ads">Facebook Ads</option>
+            <option value="Facebook Organic">Facebook Organic</option>
+            <option value="Web Organic">Web Organic</option>
+            <option value="Google Ads">Google Ads</option>
+            <option value="Referral">Referral</option>
+            <option value="Returning Customer">Returning Customer</option>
+            <option value="Family / Friends">Family / Friends</option>
           </select>
         </div>
-        <div class="field">
-          <label>Notes</label>
-          <textarea id="f-notes" placeholder="Anything useful — preferred contact times, access issues, etc."></textarea>
+        <div class="field"><label>Salesperson <span class="req">*</span></label>
+          <select id="f-salesperson">
+            <option value="">-- Select --</option>
+            <option value="Shaun Williamson">Shaun</option>
+            <option value="Reiss">Reiss</option>
+            <option value="Ryan">Ryan</option>
+          </select>
         </div>
       </div>
-
-      <div class="btn-row">
-        <button class="btn btn-primary btn-full" id="btn-to-slot">Book Survey Slot →</button>
-      </div>
+      <div class="field"><label>Notes</label><textarea id="f-notes" placeholder="Preferred contact times, access issues, anything useful..."></textarea></div>
     </div>
-
-    <!-- STEP 2: Slot picker -->
-    <div id="step-2" style="display:none;">
-
-      <div class="card">
-        <div class="card-title">Select a Day</div>
-        <div class="cal-strip" id="cal-strip"></div>
-        <div id="slot-view">
-          <div class="slots-loading" id="slots-loading">Select a day above</div>
-          <div id="slot-grid-container"></div>
-        </div>
-      </div>
-
-      <div class="geo-warning" id="geo-warning">
-        <div class="geo-warning-title">⚠ Travel conflict detected</div>
-        <p>The following bookings on this day are far from <strong id="geo-new-pc"></strong>. Shaun may have a long day.</p>
-        <ul class="clash-list" id="geo-clash-list"></ul>
-      </div>
-
-      <div class="btn-row">
-        <button class="btn btn-ghost" id="btn-back-1">← Back</button>
-        <button class="btn btn-primary btn-full" id="btn-to-confirm" disabled>Continue →</button>
-      </div>
-    </div>
-
-    <!-- STEP 3: Confirm -->
-    <div id="step-3" style="display:none;">
-      <div class="card">
-        <div class="card-title">Confirm Booking</div>
-        <div id="confirm-details"></div>
-      </div>
-
-      <div class="geo-warning" id="geo-warning-confirm">
-        <div class="geo-warning-title">⚠ Travel conflict — are you sure?</div>
-        <p>This booking may not be the best use of Shaun's time on this day. You can proceed, but it's worth checking the diary.</p>
-      </div>
-
-      <div class="btn-row">
-        <button class="btn btn-ghost" id="btn-back-2">← Back</button>
-        <button class="btn btn-primary btn-full" id="btn-confirm">✓ Confirm Booking</button>
-      </div>
-    </div>
-
+    <div class="btn-row"><button class="btn btn-primary btn-full" id="btn-to-slot">Book Survey Slot</button></div>
   </div>
-
-  <!-- ── DASHBOARD VIEW ── -->
-  <div class="view" id="view-dashboard">
-    <div class="dash-controls">
-      <select id="dash-filter">
-        <option value="upcoming">Upcoming surveys</option>
-        <option value="all">All leads</option>
-        <option value="lead">Unbooked leads</option>
-      </select>
-      <button class="btn btn-ghost" id="btn-refresh-dash" style="padding:10px 14px;">↻</button>
-    </div>
-    <div id="dash-list">
-      <div class="slots-loading">Loading…</div>
-    </div>
-  </div>
-
-  <!-- ── SETTINGS VIEW ── -->
-  <div class="view" id="view-settings">
+  <div id="step-2" style="display:none">
     <div class="card">
-      <div class="card-title">Scheduling</div>
-      <div class="setting-row">
-        <div>
-          <div class="setting-label">Slot duration</div>
-          <div class="setting-desc">How long each survey slot is</div>
-        </div>
-        <div style="display:flex;align-items:center;gap:6px;">
-          <input type="number" id="set-slot-duration" min="30" max="240" step="30" value="60" style="width:70px;">
-          <span style="font-size:13px;color:var(--muted);">mins</span>
-        </div>
-      </div>
-      <div class="setting-row">
-        <div>
-          <div class="setting-label">Travel buffer</div>
-          <div class="setting-desc">Extra time between slots for travel</div>
-        </div>
-        <div style="display:flex;align-items:center;gap:6px;">
-          <input type="number" id="set-travel-buffer" min="0" max="120" step="15" value="30" style="width:70px;">
-          <span style="font-size:13px;color:var(--muted);">mins</span>
-        </div>
-      </div>
-      <div class="setting-row">
-        <div>
-          <div class="setting-label">Working day start</div>
-          <div class="setting-desc">Earliest survey slot</div>
-        </div>
-        <input type="time" id="set-day-start" value="09:00">
-      </div>
-      <div class="setting-row">
-        <div>
-          <div class="setting-label">Working day end</div>
-          <div class="setting-desc">Latest survey slot start time</div>
-        </div>
-        <input type="time" id="set-day-end" value="17:00">
-      </div>
-      <div class="setting-row">
-        <div>
-          <div class="setting-label">Days ahead to show</div>
-          <div class="setting-desc">How far forward to offer slots</div>
-        </div>
-        <div style="display:flex;align-items:center;gap:6px;">
-          <input type="number" id="set-days-ahead" min="7" max="60" step="1" value="14" style="width:70px;">
-          <span style="font-size:13px;color:var(--muted);">days</span>
-        </div>
-      </div>
-      <div class="setting-row">
-        <div>
-          <div class="setting-label">Geo warning distance</div>
-          <div class="setting-desc">Flag bookings further apart than this</div>
-        </div>
-        <div style="display:flex;align-items:center;gap:6px;">
-          <input type="number" id="set-geo-threshold" min="10" max="200" step="5" value="50" style="width:70px;">
-          <span style="font-size:13px;color:var(--muted);">km</span>
-        </div>
-      </div>
-      <div style="margin-top:16px;">
-        <button class="btn btn-primary" id="btn-save-settings">Save Settings</button>
-      </div>
+      <div class="card-title">Select a Day</div>
+      <div class="cal-strip" id="cal-strip"></div>
+      <div id="slots-loading" class="slots-loading">Select a day above</div>
+      <div id="slot-grid-container"></div>
     </div>
-
-    <div class="card">
-      <div class="card-title">Salesperson</div>
-      <div class="setting-row">
-        <div>
-          <div class="setting-label">Default salesperson</div>
-          <div class="setting-desc">Who surveys are assigned to</div>
-        </div>
-        <input type="text" id="set-salesperson" value="Shaun" style="width:120px;">
-      </div>
+    <div class="geo-warning" id="geo-warning">
+      <div class="geo-warning-title">&#9888; Travel conflict detected</div>
+      <p>These bookings are far from <strong id="geo-new-pc"></strong>. Worth checking before confirming.</p>
+      <ul class="geo-clash-list" id="geo-clash-list"></ul>
     </div>
-
-    <div class="card" style="border-color:var(--border);">
-      <div class="card-title">About</div>
-      <div style="font-size:13px;color:var(--muted);line-height:1.7;">
-        Scout v0.1.1<br>
-        Lead capture &amp; survey booking for Annick Bathrooms.<br>
-        Google Calendar integration: coming in v0.2.0.
-      </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" id="btn-back-1">Back</button>
+      <button class="btn btn-primary btn-full" id="btn-to-confirm" disabled>Continue</button>
     </div>
   </div>
-
+  <div id="step-3" style="display:none">
+    <div class="card">
+      <div class="card-title">Confirm Booking</div>
+      <div id="confirm-details"></div>
+    </div>
+    <div class="geo-warning" id="geo-warning-confirm">
+      <div class="geo-warning-title">&#9888; Travel conflict - are you sure?</div>
+      <p>This booking may not be the best use of time on this day. You can still proceed.</p>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" id="btn-back-2">Back</button>
+      <button class="btn btn-primary btn-full" id="btn-confirm">Confirm Booking</button>
+    </div>
+  </div>
+</div>
+<div class="view" id="view-calendar">
+  <div class="cal-header">
+    <div class="cal-header-left">
+      <button class="btn btn-ghost btn-sm" id="cal-prev">&#8592;</button>
+      <button class="btn btn-ghost btn-sm" id="cal-today">Today</button>
+      <button class="btn btn-ghost btn-sm" id="cal-next">&#8594;</button>
+      <div class="cal-title" id="cal-title"></div>
+    </div>
+    <div class="cal-view-toggle">
+      <button class="cal-view-btn active" data-calview="month">Month</button>
+      <button class="cal-view-btn" data-calview="week">Week</button>
+      <button class="cal-view-btn" data-calview="day">Day</button>
+    </div>
+  </div>
+  <div id="cal-body"></div>
+</div>
+<div class="view" id="view-bookings">
+  <div class="dash-controls">
+    <select id="dash-filter" style="flex:1">
+      <option value="upcoming">Upcoming surveys</option>
+      <option value="all">All leads</option>
+      <option value="unbooked">Unbooked leads</option>
+    </select>
+    <button class="btn btn-ghost btn-sm" id="btn-refresh-dash">&#8635;</button>
+  </div>
+  <div id="dash-list"><div class="slots-loading">Loading...</div></div>
+</div>
+<div class="view" id="view-history">
+  <div class="month-nav">
+    <button class="month-nav-btn" id="hist-prev">&#8592;</button>
+    <div class="month-nav-title" id="hist-title"></div>
+    <button class="month-nav-btn" id="hist-next">&#8594;</button>
+  </div>
+  <div id="hist-list"><div class="slots-loading">Loading...</div></div>
+</div>
+<div class="view" id="view-settings">
+  <div class="card">
+    <div class="card-title">Scheduling</div>
+    <div class="setting-row">
+      <div><div class="setting-label">Slot duration</div><div class="setting-desc">How long each survey takes</div></div>
+      <div style="display:flex;align-items:center;gap:6px"><input type="number" id="set-slot-duration" min="30" max="240" step="30" value="60"><span style="font-size:13px;color:var(--muted)">mins</span></div>
+    </div>
+    <div class="setting-row">
+      <div><div class="setting-label">Travel buffer</div><div class="setting-desc">Extra time between slots</div></div>
+      <div style="display:flex;align-items:center;gap:6px"><input type="number" id="set-travel-buffer" min="0" max="120" step="15" value="30"><span style="font-size:13px;color:var(--muted)">mins</span></div>
+    </div>
+    <div class="setting-row">
+      <div><div class="setting-label">Day start</div><div class="setting-desc">Earliest survey slot</div></div>
+      <input type="time" id="set-day-start" value="09:00">
+    </div>
+    <div class="setting-row">
+      <div><div class="setting-label">Day end</div><div class="setting-desc">Latest slot start time</div></div>
+      <input type="time" id="set-day-end" value="17:00">
+    </div>
+    <div class="setting-row">
+      <div><div class="setting-label">Days ahead</div><div class="setting-desc">How far forward to offer slots</div></div>
+      <div style="display:flex;align-items:center;gap:6px"><input type="number" id="set-days-ahead" min="7" max="60" value="14"><span style="font-size:13px;color:var(--muted)">days</span></div>
+    </div>
+    <div class="setting-row">
+      <div><div class="setting-label">Geo warning distance</div><div class="setting-desc">Flag bookings further apart than this</div></div>
+      <div style="display:flex;align-items:center;gap:6px"><input type="number" id="set-geo-threshold" min="5" max="150" step="5" value="30"><span style="font-size:13px;color:var(--muted)">miles</span></div>
+    </div>
+    <div style="margin-top:16px"><button class="btn btn-primary" id="btn-save-settings">Save Settings</button></div>
+  </div>
+  <div class="card">
+    <div class="card-title">About</div>
+    <div style="font-size:13px;color:var(--muted);line-height:1.8">Scout v0.2.0<br>Lead capture and survey booking - Annick Bathrooms<br>Google Calendar sync: coming in v0.3.0</div>
+  </div>
+</div>
 </main>
-
-<!-- Booking detail modal -->
 <div class="modal-overlay" id="booking-modal">
   <div class="modal">
-    <button class="modal-close" id="modal-close">×</button>
-    <div class="modal-title" id="modal-title">Booking</div>
+    <button class="modal-close" id="modal-close">&#215;</button>
+    <div class="modal-title" id="modal-title"></div>
     <div id="modal-body"></div>
-    <div class="btn-row" style="margin-top:20px;">
+    <div class="btn-row" style="margin-top:20px;flex-wrap:wrap">
+      <button class="btn btn-warn btn-sm" id="modal-reschedule" style="display:none">&#8635; Reschedule</button>
       <button class="btn btn-ghost btn-full" id="modal-close-btn">Close</button>
     </div>
   </div>
 </div>
-
 <div id="toast"></div>
-
 <script>
 'use strict';
-(function () {
+(function(){
+var SB_URL='https://vrujksjomkvbgwxbywzx.supabase.co';
+var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZydWprc2pvbWt2Ymd3eGJ5d3p4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUyNTAxODUsImV4cCI6MjEwMDgyNjE4NX0.WAnLBFU7YXfJWHe6k_WjQzszMEgAJP0UbzuAim43GP4';
+var AT_TOKEN='patXiRwvg4SCPKpNT.c2adcbec186642c4351b2e9ca1b10f8084a17e04d0039cc908e8b75eb54f4645';
+var AT_BASE='appcCdPdmuDEnQFHL';
+var AT_TABLE='tblFunqgeMCv41Ipc';
+var MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+var WDAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
-  // ── CONFIG ──────────────────────────────────────────────────────────────
-  const SUPABASE_URL = 'https://vrujksjomkvbgwxbywzx.supabase.co';
-  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZydWprc2pvbWt2Ymd3eGJ5d3p4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUyNTAxODUsImV4cCI6MjEwMDgyNjE4NX0.WAnLBFU7YXfJWHe6k_WjQzszMEgAJP0UbzuAim43GP4';
+var cfg=loadCfg();
+var formData={},selectedSlot=null,geoWarning=false,currentDayBookings=[];
+var calView='month',calDate=new Date(),calLeads=[];
+var histDate=new Date(),rescheduleId=null,modalLead=null;
 
-  // ── STATE ────────────────────────────────────────────────────────────────
-  let cfg = loadCfg();
-  let formData = {};
-  let selectedSlot = null;
-  let geoWarning = false;
-  let currentDayBookings = [];
+function loadCfg(){
+  var d={slotDuration:60,travelBuffer:30,dayStart:'09:00',dayEnd:'17:00',daysAhead:14,geoThreshold:30};
+  try{return Object.assign(d,JSON.parse(localStorage.getItem('scout_cfg')||'{}'))}catch(e){return d}
+}
+function saveCfg(){
+  cfg.slotDuration=parseInt(g('set-slot-duration').value)||60;
+  cfg.travelBuffer=parseInt(g('set-travel-buffer').value)||30;
+  cfg.dayStart=g('set-day-start').value||'09:00';
+  cfg.dayEnd=g('set-day-end').value||'17:00';
+  cfg.daysAhead=parseInt(g('set-days-ahead').value)||14;
+  cfg.geoThreshold=parseInt(g('set-geo-threshold').value)||30;
+  localStorage.setItem('scout_cfg',JSON.stringify(cfg));
+  toast('Settings saved','success');
+}
+function populateSettings(){
+  g('set-slot-duration').value=cfg.slotDuration;g('set-travel-buffer').value=cfg.travelBuffer;
+  g('set-day-start').value=cfg.dayStart;g('set-day-end').value=cfg.dayEnd;
+  g('set-days-ahead').value=cfg.daysAhead;g('set-geo-threshold').value=cfg.geoThreshold;
+}
+function g(id){return document.getElementById(id)}
+function enc(s){return encodeURIComponent(s)}
+function pad(n){return String(n).padStart(2,'0')}
+function fmtDate(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
+function fmtDateTime(d){return d.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'})+' at '+pad(d.getHours())+':'+pad(d.getMinutes())}
 
-  // ── SETTINGS ─────────────────────────────────────────────────────────────
-  function loadCfg() {
-    const saved = localStorage.getItem('scout_cfg');
-    const defaults = {
-      slotDuration: 60,
-      travelBuffer: 30,
-      dayStart: '09:00',
-      dayEnd: '17:00',
-      daysAhead: 14,
-      geoThreshold: 50,
-      salesperson: 'Shaun'
-    };
-    return saved ? Object.assign(defaults, JSON.parse(saved)) : defaults;
-  }
-
-  function saveCfg() {
-    cfg.slotDuration  = parseInt(document.getElementById('set-slot-duration').value) || 60;
-    cfg.travelBuffer  = parseInt(document.getElementById('set-travel-buffer').value) || 30;
-    cfg.dayStart      = document.getElementById('set-day-start').value || '09:00';
-    cfg.dayEnd        = document.getElementById('set-day-end').value || '17:00';
-    cfg.daysAhead     = parseInt(document.getElementById('set-days-ahead').value) || 14;
-    cfg.geoThreshold  = parseInt(document.getElementById('set-geo-threshold').value) || 50;
-    cfg.salesperson   = document.getElementById('set-salesperson').value || 'Shaun';
-    localStorage.setItem('scout_cfg', JSON.stringify(cfg));
-    toast('Settings saved', 'success');
-  }
-
-  function populateSettings() {
-    document.getElementById('set-slot-duration').value = cfg.slotDuration;
-    document.getElementById('set-travel-buffer').value = cfg.travelBuffer;
-    document.getElementById('set-day-start').value     = cfg.dayStart;
-    document.getElementById('set-day-end').value       = cfg.dayEnd;
-    document.getElementById('set-days-ahead').value    = cfg.daysAhead;
-    document.getElementById('set-geo-threshold').value = cfg.geoThreshold;
-    document.getElementById('set-salesperson').value   = cfg.salesperson;
-  }
-
-  // ── SUPABASE ──────────────────────────────────────────────────────────────
-  async function sbFetch(path, opts = {}) {
-    const url = SUPABASE_URL + '/rest/v1/' + path;
-    const headers = {
-      'apikey': SUPABASE_KEY,
-      'Authorization': 'Bearer ' + SUPABASE_KEY,
-      'Content-Type': 'application/json',
-      'Prefer': opts.prefer || 'return=representation',
-      ...opts.headers
-    };
-    const res = await fetch(url, { method: opts.method || 'GET', headers, body: opts.body });
-    if (!res.ok) {
-      const err = await res.text();
-      throw new Error(err);
-    }
-    const text = await res.text();
-    return text ? JSON.parse(text) : [];
-  }
-
-  async function getBookingsForDay(dateStr) {
-    // dateStr = 'YYYY-MM-DD'
-    const from = dateStr + 'T00:00:00+00:00';
-    const to   = dateStr + 'T23:59:59+00:00';
-    return await sbFetch(
-      `leads?survey_at=gte.${encodeURIComponent(from)}&survey_at=lte.${encodeURIComponent(to)}&select=id,first_name,last_name,postcode,survey_at`
-    );
-  }
-
-  async function getAllLeads(filter) {
-    if (filter === 'upcoming') {
-      const now = new Date().toISOString();
-      return await sbFetch(`leads?survey_at=gte.${encodeURIComponent(now)}&order=survey_at.asc&select=*`);
-    }
-    if (filter === 'lead') {
-      return await sbFetch(`leads?status=eq.lead&order=created_at.desc&select=*`);
-    }
-    return await sbFetch(`leads?order=created_at.desc&select=*`);
-  }
-
-  async function insertLead(data) {
-    return await sbFetch('leads', {
-      method: 'POST',
-      body: JSON.stringify(data),
-      prefer: 'return=representation'
-    });
-  }
-
-  // ── TOAST ─────────────────────────────────────────────────────────────────
-  let toastTimer;
-  function toast(msg, type = '') {
-    const el = document.getElementById('toast');
-    el.textContent = msg;
-    el.className = 'show ' + type;
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => { el.className = ''; }, 3000);
-  }
-
-  // ── NAV ───────────────────────────────────────────────────────────────────
-  document.querySelectorAll('.nav-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-      btn.classList.add('active');
-      const viewId = 'view-' + btn.dataset.view;
-      document.getElementById(viewId).classList.add('active');
-      if (btn.dataset.view === 'dashboard') loadDashboard();
-      if (btn.dataset.view === 'settings') populateSettings();
-    });
+async function sbFetch(path,opts){
+  opts=opts||{};
+  var res=await fetch(SB_URL+'/rest/v1/'+path,{
+    method:opts.method||'GET',
+    headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':opts.prefer||'return=representation'},
+    body:opts.body
   });
+  if(!res.ok){throw new Error(await res.text())}
+  var t=await res.text();return t?JSON.parse(t):[];
+}
+async function getBookingsForDay(ds){
+  return sbFetch('leads?survey_at=gte.'+enc(ds+'T00:00:00')+'&survey_at=lte.'+enc(ds+'T23:59:59')+'&select=id,first_name,last_name,postcode,survey_at');
+}
+async function getAllLeads(filter){
+  if(filter==='upcoming'){return sbFetch('leads?survey_at=gte.'+enc(new Date().toISOString())+'&order=survey_at.asc&select=*')}
+  if(filter==='unbooked')return sbFetch('leads?status=eq.lead&order=created_at.desc&select=*');
+  return sbFetch('leads?order=created_at.desc&select=*');
+}
+async function getLeadsForMonth(yr,mo){
+  var from=yr+'-'+pad(mo+1)+'-01';
+  var last=new Date(yr,mo+1,0);
+  var to=yr+'-'+pad(mo+1)+'-'+pad(last.getDate());
+  return sbFetch('leads?survey_at=gte.'+enc(from+'T00:00:00')+'&survey_at=lte.'+enc(to+'T23:59:59')+'&order=survey_at.asc&select=*');
+}
+async function insertLead(data){return sbFetch('leads',{method:'POST',body:JSON.stringify(data),prefer:'return=representation'})}
+async function updateLead(id,data){return sbFetch('leads?id=eq.'+id,{method:'PATCH',body:JSON.stringify(data),prefer:'return=representation'})}
+async function pushToAirtable(data){
+  var fields={'Customer Name':data.first_name+' '+data.last_name,'Street Address':data.address||'','Town / City':data.town||'','Postcode':data.postcode||'','Phone Number':data.phone||'','Customer Email':data.email||'','Lead Source':data.lead_source||'','Assigned Surveyor':data.salesperson||'','Sales Pipeline':'Lead Assigned to Surveyor'};
+  if(data.survey_at)fields['Date assigned to Surveyor']=data.survey_at.substring(0,10);
+  var res=await fetch('https://api.airtable.com/v0/'+AT_BASE+'/'+AT_TABLE,{method:'POST',headers:{'Authorization':'Bearer '+AT_TOKEN,'Content-Type':'application/json'},body:JSON.stringify({fields:fields})});
+  if(!res.ok)throw new Error(await res.text());
+  return res.json();
+}
 
-  // ── STEP HELPERS ──────────────────────────────────────────────────────────
-  function goStep(n) {
-    document.getElementById('step-1').style.display = n === 1 ? '' : 'none';
-    document.getElementById('step-2').style.display = n === 2 ? '' : 'none';
-    document.getElementById('step-3').style.display = n === 3 ? '' : 'none';
-    document.querySelectorAll('.step').forEach(el => {
-      const s = parseInt(el.dataset.step);
-      el.className = 'step' + (s === n ? ' active' : s < n ? ' done' : '');
-    });
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
+var toastTimer;
+function toast(msg,type){
+  var el=g('toast');el.textContent=msg;el.className='show '+(type||'');
+  clearTimeout(toastTimer);toastTimer=setTimeout(function(){el.className=''},3500);
+}
 
-  // ── FORM VALIDATION ───────────────────────────────────────────────────────
-  function validateForm() {
-    const req = ['f-first', 'f-last', 'f-address', 'f-postcode', 'f-phone', 'f-source'];
-    for (const id of req) {
-      const el = document.getElementById(id);
-      if (!el.value.trim()) {
-        el.focus();
-        toast('Please fill in all required fields', 'error');
-        return false;
-      }
-    }
-    const pc = document.getElementById('f-postcode').value.trim().toUpperCase();
-    if (!pc.match(/^[A-Z]{1,2}\d[\dA-Z]?\s?\d[A-Z]{2}$/i)) {
-      toast('Please enter a valid UK postcode', 'error');
-      document.getElementById('f-postcode').focus();
-      return false;
-    }
-    return true;
-  }
-
-  function collectForm() {
-    formData = {
-      first_name:  document.getElementById('f-first').value.trim(),
-      last_name:   document.getElementById('f-last').value.trim(),
-      address:     document.getElementById('f-address').value.trim(),
-      town:        document.getElementById('f-town').value.trim(),
-      postcode:    document.getElementById('f-postcode').value.trim().toUpperCase(),
-      email:       document.getElementById('f-email').value.trim(),
-      phone:       document.getElementById('f-phone').value.trim(),
-      lead_source: document.getElementById('f-source').value,
-      notes:       document.getElementById('f-notes').value.trim(),
-      status:      'survey_booked',
-      salesperson: cfg.salesperson.toLowerCase()
-    };
-  }
-
-  // ── STEP 1 → 2 ───────────────────────────────────────────────────────────
-  document.getElementById('btn-to-slot').addEventListener('click', () => {
-    if (!validateForm()) return;
-    collectForm();
-    goStep(2);
-    buildCalStrip();
+document.querySelectorAll('.nav-btn').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.remove('active')});
+    document.querySelectorAll('.view').forEach(function(v){v.classList.remove('active')});
+    btn.classList.add('active');
+    g('view-'+btn.dataset.view).classList.add('active');
+    if(btn.dataset.view==='calendar'){loadCalLeads().then(renderCal)}
+    if(btn.dataset.view==='bookings')loadDashboard();
+    if(btn.dataset.view==='history')loadHistory();
+    if(btn.dataset.view==='settings')populateSettings();
   });
+});
 
-  // ── CALENDAR STRIP ────────────────────────────────────────────────────────
-  let bookingCountByDay = {};
-
-  async function buildCalStrip() {
-    const strip = document.getElementById('cal-strip');
-    strip.innerHTML = '';
-    const today = new Date();
-    // Pre-fetch booking counts for the window
-    const from = fmtDate(today);
-    const ahead = new Date(today);
-    ahead.setDate(ahead.getDate() + cfg.daysAhead);
-    const to = fmtDate(ahead);
-    try {
-      const rows = await sbFetch(
-        `leads?survey_at=gte.${encodeURIComponent(from + 'T00:00:00')}` +
-        `&survey_at=lte.${encodeURIComponent(to + 'T23:59:59')}&select=survey_at`
-      );
-      bookingCountByDay = {};
-      rows.forEach(r => {
-        const d = r.survey_at ? r.survey_at.substring(0, 10) : null;
-        if (d) bookingCountByDay[d] = (bookingCountByDay[d] || 0) + 1;
-      });
-    } catch(e) { bookingCountByDay = {}; }
-
-    const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-    for (let i = 0; i < cfg.daysAhead; i++) {
-      const d = new Date(today);
-      d.setDate(d.getDate() + i);
-      const ds = fmtDate(d);
-      const count = bookingCountByDay[ds] || 0;
-      const el = document.createElement('div');
-      el.className = 'cal-day';
-      el.dataset.date = ds;
-      el.innerHTML = `
-        <div class="cal-day-name">${days[d.getDay()]}</div>
-        <div class="cal-day-num">${d.getDate()}</div>
-        ${count > 0 ? `<div class="cal-day-count">${count} booked</div><div class="cal-dot"></div>` : '<div class="cal-day-count"> </div>'}
-      `;
-      el.addEventListener('click', () => selectDay(ds, el));
-      strip.appendChild(el);
-    }
-  }
-
-  async function selectDay(dateStr, el) {
-    document.querySelectorAll('.cal-day').forEach(d => d.classList.remove('selected'));
-    el.classList.add('selected');
-    selectedSlot = null;
-    document.getElementById('btn-to-confirm').disabled = true;
-    document.getElementById('geo-warning').classList.remove('visible');
-
-    const container = document.getElementById('slot-grid-container');
-    const loading = document.getElementById('slots-loading');
-    loading.textContent = 'Loading slots…';
-    loading.style.display = 'block';
-    container.innerHTML = '';
-
-    try {
-      currentDayBookings = await getBookingsForDay(dateStr);
-      loading.style.display = 'none';
-      renderSlots(dateStr, currentDayBookings);
-    } catch(e) {
-      loading.textContent = 'Failed to load slots. Check connection.';
-    }
-  }
-
-  function renderSlots(dateStr, existingBookings) {
-    const container = document.getElementById('slot-grid-container');
-    container.innerHTML = '';
-
-    const stepMins = cfg.slotDuration + cfg.travelBuffer;
-    const [sh, sm] = cfg.dayStart.split(':').map(Number);
-    const [eh, em] = cfg.dayEnd.split(':').map(Number);
-    const startMin = sh * 60 + sm;
-    const endMin   = eh * 60 + em;
-
-    // Build taken set from existing bookings
-    const takenMins = new Set();
-    existingBookings.forEach(b => {
-      if (!b.survey_at) return;
-      const t = new Date(b.survey_at);
-      const m = t.getHours() * 60 + t.getMinutes();
-      // Mark the slot duration + buffer as taken
-      for (let x = m; x < m + cfg.slotDuration + cfg.travelBuffer; x += 15) {
-        takenMins.add(x);
-      }
-    });
-
-    const grid = document.createElement('div');
-    grid.className = 'slot-grid';
-
-    for (let m = startMin; m + cfg.slotDuration <= endMin; m += stepMins) {
-      const h = Math.floor(m / 60);
-      const mm = m % 60;
-      const label = `${pad(h)}:${pad(mm)}`;
-      const taken = takenMins.has(m);
-      const btn = document.createElement('button');
-      btn.className = 'slot-btn' + (taken ? ' taken' : '');
-      btn.textContent = label;
-      btn.dataset.time = label;
-      btn.dataset.mins = m;
-      if (!taken) {
-        btn.addEventListener('click', () => selectSlot(dateStr, label, btn));
-      }
-      grid.appendChild(btn);
-    }
-
-    if (!grid.children.length) {
-      container.innerHTML = '<div class="slots-loading">No slots available for this day.</div>';
-      return;
-    }
-
-    container.appendChild(grid);
-  }
-
-  async function selectSlot(dateStr, timeStr, btn) {
-    document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
-    btn.classList.add('selected');
-    selectedSlot = { date: dateStr, time: timeStr };
-    document.getElementById('btn-to-confirm').disabled = false;
-
-    // Run geo check
-    await runGeoCheck(dateStr);
-  }
-
-  // ── GEO CHECK ─────────────────────────────────────────────────────────────
-  async function runGeoCheck(dateStr) {
-    const warnEl = document.getElementById('geo-warning');
-    warnEl.classList.remove('visible');
-    if (!formData.postcode || currentDayBookings.length === 0) return;
-
-    const postcodesToCheck = [formData.postcode, ...currentDayBookings.map(b => b.postcode).filter(Boolean)];
-    if (postcodesToCheck.length < 2) return;
-
-    try {
-      const res = await fetch('https://api.postcodes.io/postcodes', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ postcodes: postcodesToCheck.map(p => p.replace(/\s/g, '')) })
-      });
-      const data = await res.json();
-      const coords = data.result.map(r => r.result ? { lat: r.result.latitude, lng: r.result.longitude, pc: r.query } : null);
-      const newCoord = coords[0];
-      if (!newCoord) return;
-
-      const clashes = [];
-      for (let i = 1; i < coords.length; i++) {
-        if (!coords[i]) continue;
-        const dist = haversineKm(newCoord.lat, newCoord.lng, coords[i].lat, coords[i].lng);
-        if (dist > cfg.geoThreshold) {
-          const booking = currentDayBookings[i - 1];
-          clashes.push({
-            name: booking.first_name + ' ' + booking.last_name,
-            pc: coords[i].pc.toUpperCase(),
-            dist: Math.round(dist)
-          });
-        }
-      }
-
-      if (clashes.length > 0) {
-        geoWarning = true;
-        document.getElementById('geo-new-pc').textContent = formData.postcode;
-        const list = document.getElementById('geo-clash-list');
-        list.innerHTML = clashes.map(c =>
-          `<li>${c.name} — ${c.pc} (${c.dist}km away)</li>`
-        ).join('');
-        warnEl.classList.add('visible');
-        document.getElementById('geo-warning-confirm').classList.add('visible');
-      } else {
-        geoWarning = false;
-        document.getElementById('geo-warning-confirm').classList.remove('visible');
-      }
-    } catch(e) {
-      // Geo check failed silently — don't block booking
-    }
-  }
-
-  function haversineKm(lat1, lng1, lat2, lng2) {
-    const R = 6371;
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLng = (lng2 - lng1) * Math.PI / 180;
-    const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLng/2)**2;
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-  }
-
-  // ── STEP 2 → 3 ───────────────────────────────────────────────────────────
-  document.getElementById('btn-to-confirm').addEventListener('click', () => {
-    if (!selectedSlot) return;
-    buildConfirm();
-    goStep(3);
+function goStep(n){
+  [1,2,3].forEach(function(i){g('step-'+i).style.display=i===n?'':'none'});
+  document.querySelectorAll('.step').forEach(function(el){
+    var s=parseInt(el.dataset.step);
+    el.className='step'+(s===n?' active':s<n?' done':'');
   });
+  window.scrollTo({top:0,behavior:'smooth'});
+}
 
-  function buildConfirm() {
-    const sourceLabels = {
-      showroom_walkin: 'Showroom Walk-in', phone_call: 'Phone Call',
-      dms_phone: 'DMS Phone Call', facebook: 'Facebook',
-      web_fb: 'Web (Facebook Ad)', web_organic: 'Web (Organic)',
-      web_paid: 'Web (Paid Ads)', referral: 'Referral',
-      return_customer: 'Return Customer', family_friends: 'Family / Friends'
-    };
-    const dt = new Date(selectedSlot.date + 'T' + selectedSlot.time);
-    const rows = [
-      ['Name',    formData.first_name + ' ' + formData.last_name],
-      ['Address', [formData.address, formData.town, formData.postcode].filter(Boolean).join(', ')],
-      ['Phone',   formData.phone],
-      ['Email',   formData.email || '—'],
-      ['Source',  sourceLabels[formData.lead_source] || formData.lead_source],
-      ['Survey',  fmtDateTime(dt)],
-      ['With',    cfg.salesperson],
-    ];
-    const html = rows.map(([l, v]) =>
-      `<div class="confirm-row"><span class="confirm-label">${l}</span><span class="confirm-value">${v}</span></div>`
-    ).join('');
-    document.getElementById('confirm-details').innerHTML = html;
-
-    if (geoWarning) {
-      document.getElementById('geo-warning-confirm').classList.add('visible');
-    }
+function validateForm(){
+  var req=['f-first','f-last','f-address','f-postcode','f-phone','f-source','f-salesperson'];
+  for(var i=0;i<req.length;i++){
+    var el=g(req[i]);if(!el.value.trim()){el.focus();toast('Please fill in all required fields','error');return false}
   }
+  if(!/^[A-Z]{1,2}\d[\dA-Z]?\s?\d[A-Z]{2}$/i.test(g('f-postcode').value.trim())){toast('Please enter a valid UK postcode','error');return false}
+  return true;
+}
+function collectForm(){
+  formData={first_name:g('f-first').value.trim(),last_name:g('f-last').value.trim(),address:g('f-address').value.trim(),town:g('f-town').value.trim(),postcode:g('f-postcode').value.trim().toUpperCase(),email:g('f-email').value.trim(),phone:g('f-phone').value.trim(),lead_source:g('f-source').value,notes:g('f-notes').value.trim(),status:'survey_booked',salesperson:g('f-salesperson').value};
+}
 
-  // ── BACK BUTTONS ──────────────────────────────────────────────────────────
-  document.getElementById('btn-back-1').addEventListener('click', () => goStep(1));
-  document.getElementById('btn-back-2').addEventListener('click', () => goStep(2));
+g('btn-to-slot').addEventListener('click',function(){if(!validateForm())return;collectForm();goStep(2);buildCalStrip()});
 
-  // ── CONFIRM → SAVE ────────────────────────────────────────────────────────
-  document.getElementById('btn-confirm').addEventListener('click', async () => {
-    const btn = document.getElementById('btn-confirm');
-    btn.disabled = true;
-    btn.textContent = 'Saving…';
+async function buildCalStrip(){
+  var strip=g('cal-strip');strip.innerHTML='';
+  var today=new Date(),ahead=new Date(today);ahead.setDate(ahead.getDate()+cfg.daysAhead);
+  var counts={};
+  try{var rows=await sbFetch('leads?survey_at=gte.'+enc(fmtDate(today)+'T00:00:00')+'&survey_at=lte.'+enc(fmtDate(ahead)+'T23:59:59')+'&select=survey_at');rows.forEach(function(r){var d=r.survey_at?r.survey_at.substring(0,10):null;if(d)counts[d]=(counts[d]||0)+1})}catch(e){}
+  var dn=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  for(var i=0;i<cfg.daysAhead;i++){
+    var d=new Date(today);d.setDate(d.getDate()+i);
+    var ds=fmtDate(d),count=counts[ds]||0;
+    var el=document.createElement('div');el.className='cal-day-pill';el.dataset.date=ds;
+    el.innerHTML='<div class="cal-day-pill-name">'+dn[d.getDay()]+'</div><div class="cal-day-pill-num">'+d.getDate()+'</div><div class="cal-day-pill-count">'+(count>0?count+' booked':'')+'</div>';
+    (function(date,elem){elem.addEventListener('click',function(){selectDay(date,elem)})})(ds,el);
+    strip.appendChild(el);
+  }
+}
 
-    const surveyAt = selectedSlot.date + 'T' + selectedSlot.time + ':00';
-    const payload = { ...formData, survey_at: surveyAt };
+async function selectDay(ds,el){
+  document.querySelectorAll('.cal-day-pill').forEach(function(d){d.classList.remove('selected')});
+  el.classList.add('selected');selectedSlot=null;
+  g('btn-to-confirm').disabled=true;g('geo-warning').classList.remove('visible');
+  var loading=g('slots-loading');loading.textContent='Loading slots...';loading.style.display='block';
+  g('slot-grid-container').innerHTML='';
+  try{currentDayBookings=await getBookingsForDay(ds);loading.style.display='none';renderSlots(ds,currentDayBookings)}
+  catch(e){loading.textContent='Failed to load slots. Check connection.'}
+}
 
-    try {
-      await insertLead(payload);
-      toast('Booking confirmed!', 'success');
-      resetForm();
-      goStep(1);
-      // Switch to dashboard
-      setTimeout(() => {
-        document.querySelector('[data-view="dashboard"]').click();
-      }, 800);
-    } catch(e) {
-      toast('Save failed: ' + e.message, 'error');
-      btn.disabled = false;
-      btn.textContent = '✓ Confirm Booking';
-    }
+function renderSlots(ds,existing){
+  var container=g('slot-grid-container');container.innerHTML='';
+  var stepMins=cfg.slotDuration+cfg.travelBuffer;
+  var sh=parseInt(cfg.dayStart.split(':')[0]),sm=parseInt(cfg.dayStart.split(':')[1]);
+  var eh=parseInt(cfg.dayEnd.split(':')[0]),em=parseInt(cfg.dayEnd.split(':')[1]);
+  var startMin=sh*60+sm,endMin=eh*60+em,takenMins={};
+  existing.forEach(function(b){
+    if(!b.survey_at)return;
+    var t=new Date(b.survey_at),m=t.getHours()*60+t.getMinutes();
+    for(var x=m;x<m+cfg.slotDuration+cfg.travelBuffer;x+=15)takenMins[x]=true;
   });
-
-  function resetForm() {
-    ['f-first','f-last','f-address','f-town','f-postcode','f-email','f-phone','f-notes'].forEach(id => {
-      document.getElementById(id).value = '';
-    });
-    document.getElementById('f-source').value = '';
-    formData = {};
-    selectedSlot = null;
-    geoWarning = false;
-    document.getElementById('geo-warning').classList.remove('visible');
-    document.getElementById('geo-warning-confirm').classList.remove('visible');
-    document.getElementById('btn-confirm').disabled = false;
-    document.getElementById('btn-confirm').textContent = '✓ Confirm Booking';
+  var grid=document.createElement('div');grid.className='slot-grid';
+  for(var m=startMin;m+cfg.slotDuration<=endMin;m+=stepMins){
+    var h=Math.floor(m/60),mm=m%60,label=pad(h)+':'+pad(mm),taken=!!takenMins[m];
+    var btn=document.createElement('button');btn.className='slot-btn'+(taken?' taken':'');
+    btn.textContent=taken?'\u2715 '+label:label;btn.dataset.time=label;
+    if(!taken)(function(date,time,b){b.addEventListener('click',function(){selectSlot(date,time,b)})})(ds,label,btn);
+    grid.appendChild(btn);
   }
+  if(!grid.children.length){container.innerHTML='<div class="slots-loading">No slots available.</div>';return}
+  container.appendChild(grid);
+}
 
-  // ── DASHBOARD ─────────────────────────────────────────────────────────────
-  async function loadDashboard() {
-    const filter = document.getElementById('dash-filter').value;
-    const list = document.getElementById('dash-list');
-    list.innerHTML = '<div class="slots-loading">Loading…</div>';
-    try {
-      const leads = await getAllLeads(filter);
-      renderDashboard(leads);
-    } catch(e) {
-      list.innerHTML = '<div class="slots-loading">Failed to load. Check connection.</div>';
+async function selectSlot(ds,timeStr,btn){
+  document.querySelectorAll('.slot-btn').forEach(function(b){b.classList.remove('selected')});
+  btn.classList.add('selected');selectedSlot={date:ds,time:timeStr};
+  g('btn-to-confirm').disabled=false;await runGeoCheck();
+}
+
+async function runGeoCheck(){
+  g('geo-warning').classList.remove('visible');g('geo-warning-confirm').classList.remove('visible');geoWarning=false;
+  if(!formData.postcode||currentDayBookings.length===0)return;
+  var pcs=[formData.postcode];currentDayBookings.forEach(function(b){if(b.postcode)pcs.push(b.postcode)});
+  if(pcs.length<2)return;
+  try{
+    var res=await fetch('https://api.postcodes.io/postcodes',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({postcodes:pcs.map(function(p){return p.replace(/\s/g,'')})})});
+    var data=await res.json(),coords=data.result.map(function(r){return r.result?{lat:r.result.latitude,lng:r.result.longitude,pc:r.query}:null});
+    var newC=coords[0];if(!newC)return;
+    var clashes=[];
+    for(var i=1;i<coords.length;i++){
+      if(!coords[i])continue;
+      var distMiles=haversineKm(newC.lat,newC.lng,coords[i].lat,coords[i].lng)*0.621371;
+      if(distMiles>cfg.geoThreshold){var b=currentDayBookings[i-1];clashes.push({name:b.first_name+' '+b.last_name,pc:coords[i].pc.toUpperCase(),dist:Math.round(distMiles)})}
     }
-  }
-
-  function renderDashboard(leads) {
-    const list = document.getElementById('dash-list');
-    if (!leads.length) {
-      list.innerHTML = `<div class="empty-state">
-        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
-        </svg>
-        <p>No bookings found</p>
-      </div>`;
-      return;
+    if(clashes.length>0){
+      geoWarning=true;g('geo-new-pc').textContent=formData.postcode;
+      g('geo-clash-list').innerHTML=clashes.map(function(c){return '<li>'+c.name+' - '+c.pc+' ('+c.dist+' miles)</li>'}).join('');
+      g('geo-warning').classList.add('visible');g('geo-warning-confirm').classList.add('visible');
     }
+  }catch(e){geoWarning=false}
+}
 
-    const sourceLabels = {
-      showroom_walkin: 'Walk-in', phone_call: 'Phone', dms_phone: 'DMS',
-      facebook: 'Facebook', web_fb: 'FB Ad', web_organic: 'Organic',
-      web_paid: 'Paid Ad', referral: 'Referral',
-      return_customer: 'Return', family_friends: 'F&F'
-    };
+function haversineKm(lat1,lng1,lat2,lng2){
+  var R=6371,dLat=(lat2-lat1)*Math.PI/180,dLng=(lng2-lng1)*Math.PI/180;
+  var a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)*Math.sin(dLng/2);
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
 
-    list.innerHTML = leads.map(l => {
-      const dt = l.survey_at ? new Date(l.survey_at) : null;
-      const timeStr = dt ? `${pad(dt.getHours())}:${pad(dt.getMinutes())}` : '—';
-      const dateStr = dt ? dt.toLocaleDateString('en-GB', { day:'numeric', month:'short' }) : 'Unbooked';
-      const statusClass = 'status-' + (l.status || 'lead');
-      const statusLabel = l.status === 'survey_booked' ? 'Booked' : l.status === 'quote_sent' ? 'Quote Sent' : 'Lead';
-      return `<div class="booking-card" data-id="${l.id}">
-        <div class="booking-time">
-          <div class="booking-time-hour">${timeStr}</div>
-          <div class="booking-time-date">${dateStr}</div>
-        </div>
-        <div class="booking-info">
-          <div class="booking-name">${l.first_name} ${l.last_name}</div>
-          <div class="booking-address">${[l.address, l.town, l.postcode].filter(Boolean).join(', ')}</div>
-          ${l.lead_source ? `<span class="booking-source">${sourceLabels[l.lead_source] || l.lead_source}</span>` : ''}
-        </div>
-        <div class="booking-status ${statusClass}">${statusLabel}</div>
-      </div>`;
-    }).join('');
+g('btn-to-confirm').addEventListener('click',function(){if(!selectedSlot)return;buildConfirm();goStep(3)});
+g('btn-back-1').addEventListener('click',function(){goStep(1)});
+g('btn-back-2').addEventListener('click',function(){goStep(2)});
 
-    // Store leads for modal
-    list.querySelectorAll('.booking-card').forEach(card => {
-      card.addEventListener('click', () => {
-        const lead = leads.find(l => l.id === card.dataset.id);
-        if (lead) showBookingModal(lead);
+function buildConfirm(){
+  var dt=new Date(selectedSlot.date+'T'+selectedSlot.time);
+  var rows=[['Name',formData.first_name+' '+formData.last_name],['Address',[formData.address,formData.town,formData.postcode].filter(Boolean).join(', ')],['Phone',formData.phone],['Email',formData.email||'--'],['Source',formData.lead_source],['Salesperson',formData.salesperson],['Survey',fmtDateTime(dt)]];
+  g('confirm-details').innerHTML=rows.map(function(r){return '<div class="confirm-row"><span class="confirm-label">'+r[0]+'</span><span class="confirm-value">'+r[1]+'</span></div>'}).join('');
+}
+
+g('btn-confirm').addEventListener('click',async function(){
+  var btn=g('btn-confirm');if(btn.disabled)return;
+  btn.disabled=true;btn.textContent='Saving...';
+  var surveyAt=selectedSlot.date+'T'+selectedSlot.time+':00';
+  var payload=Object.assign({},formData,{survey_at:surveyAt});
+  try{
+    if(rescheduleId){
+      await updateLead(rescheduleId,{survey_at:surveyAt,salesperson:formData.salesperson});
+      toast('Survey rescheduled!','success');
+    }else{
+      var sbRes=await insertLead(payload);var newId=sbRes[0]?sbRes[0].id:null;
+      try{
+        var atRes=await pushToAirtable(payload);
+        if(atRes.id&&newId)await updateLead(newId,{airtable_record_id:atRes.id});
+        toast('Confirmed and synced to Airtable!','success');
+      }catch(atErr){toast('Saved to Scout - Airtable sync failed','warn')}
+    }
+    resetForm();goStep(1);
+    setTimeout(function(){document.querySelector('[data-view="bookings"]').click()},800);
+  }catch(e){toast('Save failed: '+e.message,'error');btn.disabled=false;btn.textContent='Confirm Booking'}
+});
+
+function resetForm(){
+  ['f-first','f-last','f-address','f-town','f-postcode','f-email','f-phone','f-notes'].forEach(function(id){g(id).value=''});
+  g('f-source').value='';g('f-salesperson').value='';
+  formData={};selectedSlot=null;geoWarning=false;rescheduleId=null;
+  g('geo-warning').classList.remove('visible');g('geo-warning-confirm').classList.remove('visible');
+  g('btn-confirm').disabled=false;g('btn-confirm').textContent='Confirm Booking';
+}
+
+async function loadCalLeads(){
+  try{calLeads=await getLeadsForMonth(calDate.getFullYear(),calDate.getMonth())}catch(e){calLeads=[]}
+}
+
+function renderCal(){
+  var title=g('cal-title'),body=g('cal-body'),todayStr=fmtDate(new Date());
+  if(calView==='month'){
+    title.textContent=MONTHS[calDate.getMonth()]+' '+calDate.getFullYear();
+    var firstDay=new Date(calDate.getFullYear(),calDate.getMonth(),1);
+    var lastDay=new Date(calDate.getFullYear(),calDate.getMonth()+1,0);
+    var startDow=firstDay.getDay();if(startDow===0)startDow=7;
+    var html='<div class="cal-grid">';
+    WDAYS.forEach(function(d){html+='<div class="cal-day-head">'+d+'</div>'});
+    for(var i=1;i<startDow;i++){var pd=new Date(firstDay);pd.setDate(pd.getDate()-(startDow-i));html+='<div class="cal-cell other-month"><div class="cal-date">'+pd.getDate()+'</div></div>'}
+    for(var d=1;d<=lastDay.getDate();d++){
+      var ds=calDate.getFullYear()+'-'+pad(calDate.getMonth()+1)+'-'+pad(d);
+      var isToday=todayStr===ds,isPast=ds<todayStr;
+      var dl=calLeads.filter(function(l){return l.survey_at&&l.survey_at.startsWith(ds)});
+      html+='<div class="cal-cell'+(isToday?' today':'')+'" data-date="'+ds+'"><div class="cal-date">'+d+'</div>';
+      dl.forEach(function(l){var t=new Date(l.survey_at);html+='<div class="cal-event'+(isPast?' past':'')+'" data-id="'+l.id+'">'+pad(t.getHours())+':'+pad(t.getMinutes())+' '+l.first_name+' '+l.last_name+'</div>'});
+      html+='</div>';
+    }
+    var total=startDow-1+lastDay.getDate(),rem=total%7===0?0:7-(total%7);
+    for(var r=1;r<=rem;r++)html+='<div class="cal-cell other-month"><div class="cal-date">'+r+'</div></div>';
+    html+='</div>';body.innerHTML=html;
+    body.querySelectorAll('.cal-event').forEach(function(el){el.addEventListener('click',function(e){e.stopPropagation();var l=calLeads.find(function(x){return x.id===el.dataset.id});if(l)showBookingModal(l,true)})});
+  }else if(calView==='week'){
+    var dow=calDate.getDay(),diff=dow===0?-6:1-dow;
+    var ws=new Date(calDate);ws.setDate(calDate.getDate()+diff);
+    var wdays=[];for(var i=0;i<7;i++){var wd=new Date(ws);wd.setDate(ws.getDate()+i);wdays.push(wd)}
+    title.textContent=ws.getDate()+' '+MONTHS[ws.getMonth()]+' - '+wdays[6].getDate()+' '+MONTHS[wdays[6].getMonth()]+' '+wdays[6].getFullYear();
+    var hrs=[];for(var h=8;h<=18;h++)hrs.push(h);
+    var html='<div class="week-grid"><div class="week-head"></div>';
+    wdays.forEach(function(d){var ds=fmtDate(d),isT=ds===todayStr;html+='<div class="week-head'+(isT?' today-head':'')+'">'+WDAYS[d.getDay()===0?6:d.getDay()-1]+' '+d.getDate()+'</div>'});
+    hrs.forEach(function(h){
+      html+='<div class="week-time">'+pad(h)+':00</div>';
+      wdays.forEach(function(d){
+        var isT=fmtDate(d)===todayStr;
+        var sl=calLeads.filter(function(l){if(!l.survey_at)return false;var lt=new Date(l.survey_at);return lt.toDateString()===d.toDateString()&&lt.getHours()===h});
+        html+='<div class="week-cell'+(isT?' today-col':'')+'">'+sl.map(function(l){return '<div class="week-event" data-id="'+l.id+'">'+l.first_name+' '+l.last_name+'</div>'}).join('')+'</div>';
       });
     });
+    html+='</div>';body.innerHTML=html;
+    body.querySelectorAll('.week-event').forEach(function(el){el.addEventListener('click',function(){var l=calLeads.find(function(x){return x.id===el.dataset.id});if(l)showBookingModal(l,true)})});
+  }else{
+    var dl=calLeads.filter(function(l){return l.survey_at&&new Date(l.survey_at).toDateString()===calDate.toDateString()});
+    title.textContent=calDate.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+    var hrs=[];for(var h=8;h<=18;h++)hrs.push(h);
+    var html='<div class="day-grid">';
+    hrs.forEach(function(h){
+      var sl=dl.filter(function(l){return new Date(l.survey_at).getHours()===h});
+      html+='<div class="day-row"><div class="day-time">'+pad(h)+':00</div><div class="day-slot">'+sl.map(function(l){return '<div class="day-event" data-id="'+l.id+'">'+l.first_name+' '+l.last_name+' - '+(l.address||'')+' '+(l.postcode||'')+'</div>'}).join('')+'</div></div>';
+    });
+    html+='</div>';body.innerHTML=html;
+    body.querySelectorAll('.day-event').forEach(function(el){el.addEventListener('click',function(){var l=calLeads.find(function(x){return x.id===el.dataset.id});if(l)showBookingModal(l,true)})});
   }
+}
 
-  function showBookingModal(lead) {
-    const dt = lead.survey_at ? new Date(lead.survey_at) : null;
-    const sourceLabels = {
-      showroom_walkin: 'Showroom Walk-in', phone_call: 'Phone Call',
-      dms_phone: 'DMS Phone Call', facebook: 'Facebook',
-      web_fb: 'Web (Facebook Ad)', web_organic: 'Web (Organic)',
-      web_paid: 'Web (Paid Ads)', referral: 'Referral',
-      return_customer: 'Return Customer', family_friends: 'Family / Friends'
-    };
-    document.getElementById('modal-title').textContent = lead.first_name + ' ' + lead.last_name;
-    const rows = [
-      ['Address', [lead.address, lead.town, lead.postcode].filter(Boolean).join(', ')],
-      ['Phone',   lead.phone || '—'],
-      ['Email',   lead.email || '—'],
-      ['Source',  sourceLabels[lead.lead_source] || lead.lead_source || '—'],
-      ['Survey',  dt ? fmtDateTime(dt) : 'Not booked'],
-      ['Status',  lead.status || '—'],
-      ['Notes',   lead.notes || '—'],
-    ];
-    document.getElementById('modal-body').innerHTML = rows.map(([l, v]) =>
-      `<div class="confirm-row"><span class="confirm-label">${l}</span><span class="confirm-value">${v}</span></div>`
-    ).join('');
-    document.getElementById('booking-modal').classList.add('open');
-  }
+g('cal-prev').addEventListener('click',function(){
+  if(calView==='month')calDate=new Date(calDate.getFullYear(),calDate.getMonth()-1,1);
+  else if(calView==='week')calDate.setDate(calDate.getDate()-7);
+  else calDate.setDate(calDate.getDate()-1);
+  loadCalLeads().then(renderCal);
+});
+g('cal-next').addEventListener('click',function(){
+  if(calView==='month')calDate=new Date(calDate.getFullYear(),calDate.getMonth()+1,1);
+  else if(calView==='week')calDate.setDate(calDate.getDate()+7);
+  else calDate.setDate(calDate.getDate()+1);
+  loadCalLeads().then(renderCal);
+});
+g('cal-today').addEventListener('click',function(){calDate=new Date();loadCalLeads().then(renderCal)});
+document.querySelectorAll('.cal-view-btn').forEach(function(btn){
+  btn.addEventListener('click',function(){document.querySelectorAll('.cal-view-btn').forEach(function(b){b.classList.remove('active')});btn.classList.add('active');calView=btn.dataset.calview;renderCal()});
+});
 
-  document.getElementById('modal-close').addEventListener('click', () => {
-    document.getElementById('booking-modal').classList.remove('open');
+async function loadDashboard(){
+  var list=g('dash-list');list.innerHTML='<div class="slots-loading">Loading...</div>';
+  try{renderBookingList(await getAllLeads(g('dash-filter').value),list,true)}
+  catch(e){list.innerHTML='<div class="slots-loading">Failed to load.</div>'}
+}
+
+function renderBookingList(leads,list,canReschedule){
+  if(!leads.length){list.innerHTML='<div class="empty-state"><p>No bookings found</p></div>';return}
+  list.innerHTML=leads.map(function(l){
+    var dt=l.survey_at?new Date(l.survey_at):null;
+    var timeStr=dt?pad(dt.getHours())+':'+pad(dt.getMinutes()):'--';
+    var dateStr=dt?dt.toLocaleDateString('en-GB',{day:'numeric',month:'short'}):'Unbooked';
+    var sc='status-'+(l.status||'lead');
+    var sl=l.status==='survey_booked'?'Booked':l.status==='quote_sent'?'Quote Sent':'Lead';
+    return '<div class="booking-card" data-id="'+l.id+'"><div class="booking-time"><div class="booking-time-hour">'+timeStr+'</div><div class="booking-time-date">'+dateStr+'</div></div><div class="booking-info"><div class="booking-name">'+l.first_name+' '+l.last_name+'</div><div class="booking-address">'+[l.address,l.town,l.postcode].filter(Boolean).join(', ')+'</div>'+(l.lead_source?'<span class="booking-source">'+l.lead_source+'</span>':'')+'</div><div class="booking-actions"><span class="booking-status '+sc+'">'+sl+'</span></div></div>';
+  }).join('');
+  list.querySelectorAll('.booking-card').forEach(function(card){
+    card.addEventListener('click',function(){var l=leads.find(function(x){return x.id===card.dataset.id});if(l)showBookingModal(l,canReschedule)});
   });
-  document.getElementById('modal-close-btn').addEventListener('click', () => {
-    document.getElementById('booking-modal').classList.remove('open');
-  });
-  document.getElementById('booking-modal').addEventListener('click', e => {
-    if (e.target === e.currentTarget) e.currentTarget.classList.remove('open');
-  });
+}
 
-  document.getElementById('dash-filter').addEventListener('change', loadDashboard);
-  document.getElementById('btn-refresh-dash').addEventListener('click', loadDashboard);
+g('dash-filter').addEventListener('change',loadDashboard);
+g('btn-refresh-dash').addEventListener('click',loadDashboard);
 
-  // ── SETTINGS SAVE ─────────────────────────────────────────────────────────
-  document.getElementById('btn-save-settings').addEventListener('click', saveCfg);
+async function loadHistory(){
+  g('hist-title').textContent=MONTHS[histDate.getMonth()]+' '+histDate.getFullYear();
+  var list=g('hist-list');list.innerHTML='<div class="slots-loading">Loading...</div>';
+  try{renderBookingList(await getLeadsForMonth(histDate.getFullYear(),histDate.getMonth()),list,false)}
+  catch(e){list.innerHTML='<div class="slots-loading">Failed to load.</div>'}
+}
+g('hist-prev').addEventListener('click',function(){histDate=new Date(histDate.getFullYear(),histDate.getMonth()-1,1);loadHistory()});
+g('hist-next').addEventListener('click',function(){histDate=new Date(histDate.getFullYear(),histDate.getMonth()+1,1);loadHistory()});
 
-  // ── UTILS ─────────────────────────────────────────────────────────────────
-  function pad(n) { return String(n).padStart(2, '0'); }
+function showBookingModal(lead,canReschedule){
+  modalLead=lead;
+  var dt=lead.survey_at?new Date(lead.survey_at):null;
+  g('modal-title').textContent=lead.first_name+' '+lead.last_name;
+  var rows=[['Address',[lead.address,lead.town,lead.postcode].filter(Boolean).join(', ')],['Phone',lead.phone||'--'],['Email',lead.email||'--'],['Source',lead.lead_source||'--'],['Salesperson',lead.salesperson||'--'],['Survey',dt?fmtDateTime(dt):'Not booked'],['Status',lead.status||'--'],['Notes',lead.notes||'--']];
+  g('modal-body').innerHTML=rows.map(function(r){return '<div class="confirm-row"><span class="confirm-label">'+r[0]+'</span><span class="confirm-value">'+r[1]+'</span></div>'}).join('');
+  g('modal-reschedule').style.display=(canReschedule&&lead.status==='survey_booked')?'':'none';
+  g('booking-modal').classList.add('open');
+}
 
-  function fmtDate(d) {
-    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
-  }
+g('modal-reschedule').addEventListener('click',function(){
+  if(!modalLead)return;
+  g('booking-modal').classList.remove('open');rescheduleId=modalLead.id;
+  g('f-first').value=modalLead.first_name||'';g('f-last').value=modalLead.last_name||'';
+  g('f-address').value=modalLead.address||'';g('f-town').value=modalLead.town||'';
+  g('f-postcode').value=modalLead.postcode||'';g('f-email').value=modalLead.email||'';
+  g('f-phone').value=modalLead.phone||'';g('f-source').value=modalLead.lead_source||'';
+  g('f-salesperson').value=modalLead.salesperson||'';g('f-notes').value=modalLead.notes||'';
+  formData={first_name:modalLead.first_name,last_name:modalLead.last_name,address:modalLead.address,town:modalLead.town,postcode:modalLead.postcode,email:modalLead.email,phone:modalLead.phone,lead_source:modalLead.lead_source,salesperson:modalLead.salesperson,notes:modalLead.notes,status:'survey_booked'};
+  document.querySelector('[data-view="new-lead"]').click();goStep(2);buildCalStrip();
+  toast('Pick a new slot for '+modalLead.first_name+' '+modalLead.last_name,'warn');
+});
 
-  function fmtDateTime(d) {
-    return d.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', year:'numeric' })
-      + ' at ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
-  }
+['modal-close','modal-close-btn'].forEach(function(id){g(id).addEventListener('click',function(){g('booking-modal').classList.remove('open')})});
+g('booking-modal').addEventListener('click',function(e){if(e.target===e.currentTarget)e.currentTarget.classList.remove('open')});
+g('btn-save-settings').addEventListener('click',saveCfg);
 
-  // ── PWA MANIFEST ──────────────────────────────────────────────────────────
-  const manifest = {
-    name: 'Scout', short_name: 'Scout',
-    description: 'Lead capture & survey booking',
-    start_url: './', display: 'standalone',
-    theme_color: '#0f1923', background_color: '#0f1923'
-  };
-  const blob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
-  const link = document.createElement('link');
-  link.rel = 'manifest';
-  link.href = URL.createObjectURL(blob);
-  document.head.appendChild(link);
-
-  // ── INIT ──────────────────────────────────────────────────────────────────
-  document.getElementById('header-status').textContent = 'Connected';
-
+var manifest={name:'Scout',short_name:'Scout',start_url:'./',display:'standalone',theme_color:'#0f1923',background_color:'#0f1923'};
+var blob=new Blob([JSON.stringify(manifest)],{type:'application/json'});
+var lnk=document.createElement('link');lnk.rel='manifest';lnk.href=URL.createObjectURL(blob);document.head.appendChild(lnk);
 })();
 </script>
 </body>
