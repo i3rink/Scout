@@ -1,4 +1,4 @@
-<!-- Scout v0.2.0 -->
+<!-- Scout v0.2.1 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -113,7 +113,7 @@
 </head>
 <body>
 <header>
-  <div style="display:flex;align-items:center;gap:4px"><div class="logo">Scout<span>.</span></div><span class="version">v0.2.0</span></div>
+  <div style="display:flex;align-items:center;gap:4px"><div class="logo">Scout<span>.</span></div><span class="version">v0.2.1</span></div>
   <div id="header-status" style="font-size:12px;color:var(--muted)">Connected</div>
 </header>
 <nav>
@@ -278,10 +278,25 @@
   </div>
   <div class="card">
     <div class="card-title">About</div>
-    <div style="font-size:13px;color:var(--muted);line-height:1.8">Scout v0.2.0<br>Lead capture and survey booking - Annick Bathrooms<br>Google Calendar sync: coming in v0.3.0</div>
+    <div style="font-size:13px;color:var(--muted);line-height:1.8">Scout v0.2.1<br>Lead capture and survey booking - Annick Bathrooms<br>Google Calendar sync: coming in v0.3.0</div>
   </div>
 </div>
 </main>
+
+<!-- PIN modal -->
+<div class="modal-overlay" id="pin-modal">
+  <div class="modal" style="max-width:320px;text-align:center">
+    <div class="modal-title">Admin PIN</div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Enter PIN to delete this record</p>
+    <input type="password" id="pin-input" maxlength="4" placeholder="----" style="text-align:center;font-size:24px;letter-spacing:8px;max-width:160px;margin:0 auto 8px">
+    <div id="pin-error" style="font-size:13px;color:var(--danger);min-height:20px;margin-bottom:8px"></div>
+    <div class="btn-row" style="justify-content:center">
+      <button class="btn btn-ghost" id="pin-cancel">Cancel</button>
+      <button class="btn btn-danger" id="pin-submit">Delete</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="booking-modal">
   <div class="modal">
     <button class="modal-close" id="modal-close">&#215;</button>
@@ -289,6 +304,7 @@
     <div id="modal-body"></div>
     <div class="btn-row" style="margin-top:20px;flex-wrap:wrap">
       <button class="btn btn-warn btn-sm" id="modal-reschedule" style="display:none">&#8635; Reschedule</button>
+      <button class="btn btn-danger btn-sm" id="modal-delete" style="display:none">&#128465; Delete</button>
       <button class="btn btn-ghost btn-full" id="modal-close-btn">Close</button>
     </div>
   </div>
@@ -673,6 +689,201 @@ g('btn-save-settings').addEventListener('click',saveCfg);
 var manifest={name:'Scout',short_name:'Scout',start_url:'./',display:'standalone',theme_color:'#0f1923',background_color:'#0f1923'};
 var blob=new Blob([JSON.stringify(manifest)],{type:'application/json'});
 var lnk=document.createElement('link');lnk.rel='manifest';lnk.href=URL.createObjectURL(blob);document.head.appendChild(lnk);
+
+// ── DELETE ────────────────────────────────────────────────────────────────
+var deleteTarget=null;
+
+g('modal-delete').addEventListener('click',function(){
+  if(!modalLead)return;
+  deleteTarget=modalLead;
+  g('pin-input').value='';
+  g('pin-error').textContent='';
+  g('pin-modal').classList.add('open');
+  setTimeout(function(){g('pin-input').focus()},100);
+});
+
+g('pin-cancel').addEventListener('click',function(){
+  g('pin-modal').classList.remove('open');deleteTarget=null;
+});
+
+g('pin-submit').addEventListener('click',async function(){
+  if(g('pin-input').value!=='1690'){
+    g('pin-error').textContent='Incorrect PIN';
+    g('pin-input').value='';g('pin-input').focus();return;
+  }
+  var btn=g('pin-submit');btn.disabled=true;btn.textContent='Deleting...';
+  try{
+    // Delete from Airtable first if we have the ID
+    if(deleteTarget.airtable_record_id){
+      try{
+        await fetch('https://api.airtable.com/v0/'+AT_BASE+'/'+AT_TABLE+'/'+deleteTarget.airtable_record_id,{
+          method:'DELETE',headers:{'Authorization':'Bearer '+AT_TOKEN}
+        });
+      }catch(e){console.warn('Airtable delete failed:',e)}
+    }
+    // Delete from Supabase
+    await sbFetch('leads?id=eq.'+deleteTarget.id,{method:'DELETE',prefer:'return=minimal'});
+    g('pin-modal').classList.remove('open');
+    g('booking-modal').classList.remove('open');
+    deleteTarget=null;
+    toast('Record deleted','success');
+    loadDashboard();
+  }catch(e){
+    g('pin-error').textContent='Delete failed: '+e.message;
+  }finally{btn.disabled=false;btn.textContent='Delete'}
+});
+
+g('pin-input').addEventListener('keydown',function(e){if(e.key==='Enter')g('pin-submit').click()});
+
+// Show delete button in modal (alongside reschedule)
+var _origShowModal=showBookingModal;
+showBookingModal=function(lead,canReschedule){
+  _origShowModal(lead,canReschedule);
+  g('modal-delete').style.display='';
+};
+
+// ── EASTER EGG — BREAKOUT ─────────────────────────────────────────────────
+var eggBuffer='';
+document.addEventListener('keydown',function(e){
+  if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA'||e.target.tagName==='SELECT')return;
+  eggBuffer=(eggBuffer+e.key.toUpperCase()).slice(-6);
+  if(eggBuffer==='ANNICK')launchBreakout();
+});
+
+function launchBreakout(){
+  if(g('breakout-overlay'))return;
+  var ov=document.createElement('div');
+  ov.id='breakout-overlay';
+  ov.style.cssText='position:fixed;inset:0;background:#0f1923;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:-apple-system,sans-serif';
+  ov.innerHTML='<div style="color:#7a90ab;font-size:12px;margin-bottom:4px;letter-spacing:2px">ANNICK BATHROOMS</div>'+
+    '<div style="display:flex;gap:20px;color:#7a90ab;font-size:12px;margin-bottom:8px">'+
+    '<span>SCORE: <span id="bk-score">0</span></span>'+
+    '<span>LIVES: <span id="bk-lives">3</span></span></div>'+
+    '<canvas id="bk-canvas" width="400" height="340" style="border:1px solid #2e3f55;border-radius:8px;display:block"></canvas>'+
+    '<div style="color:#7a90ab;font-size:11px;margin-top:8px">MOUSE or ARROW KEYS &nbsp;|&nbsp; ESC to quit</div>';
+  document.body.appendChild(ov);
+
+  var canvas=g('bk-canvas'),ctx=canvas.getContext('2d');
+  var W=400,H=340;
+  var paddleW=70,paddleH=10,paddleX=W/2-paddleW/2,paddleY=H-20,paddleSpeed=0;
+  var ballX=W/2,ballY=H-40,ballR=8,ballDX=2.5,ballDY=-3;
+  var score=0,lives=3,running=true,won=false;
+  var keys={};
+
+  // Bricks — bathroom tiles
+  var COLS=8,ROWS=4,brickW=42,brickH=16,brickPad=4,brickOffX=12,brickOffY=40;
+  var tileColors=['#3b82f6','#22c55e','#f59e0b','#ef4444'];
+  var bricks=[];
+  for(var r=0;r<ROWS;r++){for(var c=0;c<COLS;c++){bricks.push({r:r,c:c,alive:true})}}
+
+  canvas.addEventListener('mousemove',function(e){
+    var rect=canvas.getBoundingClientRect();
+    paddleX=e.clientX-rect.left-paddleW/2;
+    paddleX=Math.max(0,Math.min(W-paddleW,paddleX));
+  });
+  document.addEventListener('keydown',bkKey);document.addEventListener('keyup',bkKeyUp);
+  function bkKey(e){keys[e.key]=true;if(e.key==='Escape'){endGame(true)}}
+  function bkKeyUp(e){keys[e.key]=false}
+
+  function drawDuck(x,y,r){
+    // Body
+    ctx.fillStyle='#f59e0b';ctx.beginPath();ctx.ellipse(x,y,r,r*0.8,0,0,Math.PI*2);ctx.fill();
+    // Head
+    ctx.beginPath();ctx.arc(x+r*0.6,y-r*0.6,r*0.5,0,Math.PI*2);ctx.fill();
+    // Eye
+    ctx.fillStyle='#0f1923';ctx.beginPath();ctx.arc(x+r*0.75,y-r*0.7,r*0.12,0,Math.PI*2);ctx.fill();
+    // Bill
+    ctx.fillStyle='#ef4444';ctx.beginPath();ctx.ellipse(x+r*1.05,y-r*0.55,r*0.2,r*0.1,0,0,Math.PI*2);ctx.fill();
+  }
+
+  function drawBath(x,y,w,h){
+    ctx.fillStyle='#e8edf4';
+    ctx.beginPath();ctx.roundRect(x,y,w,h,4);ctx.fill();
+    ctx.fillStyle='#7a90ab';
+    ctx.fillRect(x+4,y+2,w-8,4);
+    // taps
+    ctx.fillStyle='#3b82f6';
+    ctx.fillRect(x+6,y-4,6,6);ctx.fillRect(x+w-12,y-4,6,6);
+  }
+
+  function loop(){
+    if(!running)return;
+    ctx.clearRect(0,0,W,H);
+
+    // Paddle movement
+    if(keys['ArrowLeft'])paddleX=Math.max(0,paddleX-5);
+    if(keys['ArrowRight'])paddleX=Math.min(W-paddleW,paddleX+5);
+
+    // Ball
+    ballX+=ballDX;ballY+=ballDY;
+    if(ballX-ballR<0){ballX=ballR;ballDX=Math.abs(ballDX)}
+    if(ballX+ballR>W){ballX=W-ballR;ballDX=-Math.abs(ballDX)}
+    if(ballY-ballR<0){ballY=ballR;ballDY=Math.abs(ballDY)}
+
+    // Paddle collision
+    if(ballY+ballR>=paddleY&&ballY+ballR<=paddleY+paddleH&&ballX>=paddleX&&ballX<=paddleX+paddleW){
+      ballDY=-Math.abs(ballDY);
+      var rel=(ballX-(paddleX+paddleW/2))/(paddleW/2);
+      ballDX=rel*4;
+    }
+
+    // Ball lost
+    if(ballY-ballR>H){
+      lives--;g('bk-lives').textContent=lives;
+      if(lives<=0){endGame(false);return}
+      ballX=W/2;ballY=H-40;ballDX=2.5;ballDY=-3;
+    }
+
+    // Bricks
+    var allGone=true;
+    bricks.forEach(function(b){
+      if(!b.alive)return;
+      allGone=false;
+      var bx=brickOffX+b.c*(brickW+brickPad);
+      var by=brickOffY+b.r*(brickH+brickPad);
+      // Draw tile
+      ctx.fillStyle=tileColors[b.r%4];
+      ctx.beginPath();ctx.roundRect(bx,by,brickW,brickH,3);ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,0.15)';ctx.lineWidth=1;ctx.stroke();
+      // Grout lines
+      ctx.strokeStyle='rgba(0,0,0,0.2)';
+      ctx.beginPath();ctx.moveTo(bx+brickW/2,by);ctx.lineTo(bx+brickW/2,by+brickH);ctx.stroke();
+      // Collision
+      if(ballX+ballR>bx&&ballX-ballR<bx+brickW&&ballY+ballR>by&&ballY-ballR<by+brickH){
+        b.alive=false;score+=10;g('bk-score').textContent=score;
+        var fromLeft=Math.abs(ballX-(bx+brickW)),fromRight=Math.abs(ballX-bx);
+        var fromTop=Math.abs(ballY-(by+brickH)),fromBottom=Math.abs(ballY-by);
+        var minH=Math.min(fromLeft,fromRight),minV=Math.min(fromTop,fromBottom);
+        if(minV<minH)ballDY=-ballDY;else ballDX=-ballDX;
+      }
+    });
+    if(allGone){won=true;endGame(true);return}
+
+    // Draw bath paddle
+    drawBath(paddleX,paddleY,paddleW,paddleH);
+    // Draw duck ball
+    drawDuck(ballX,ballY,ballR);
+
+    requestAnimationFrame(loop);
+  }
+
+  function endGame(escaped){
+    running=false;
+    document.removeEventListener('keydown',bkKey);document.removeEventListener('keyup',bkKeyUp);
+    if(escaped&&!won){document.body.removeChild(ov);return}
+    ctx.fillStyle='rgba(15,25,35,0.85)';ctx.fillRect(0,0,W,H);
+    ctx.fillStyle=won?'#22c55e':'#ef4444';
+    ctx.font='bold 28px sans-serif';ctx.textAlign='center';
+    ctx.fillText(won?'SQUEAKY CLEAN!':'BACK TO THE SHOWROOM',W/2,H/2-20);
+    ctx.fillStyle='#7a90ab';ctx.font='14px sans-serif';
+    ctx.fillText('Score: '+score,W/2,H/2+10);
+    ctx.fillText('Press ESC to close',W/2,H/2+35);
+    document.addEventListener('keydown',function esc(e){if(e.key==='Escape'){document.removeEventListener('keydown',esc);if(document.body.contains(ov))document.body.removeChild(ov)}});
+  }
+
+  requestAnimationFrame(loop);
+}
+
 })();
 </script>
 </body>
