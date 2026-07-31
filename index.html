@@ -116,7 +116,7 @@
 <header>
   <div style="display:flex;align-items:center;gap:4px"><div class="logo">Scout<span>.</span></div><span class="version">v0.3.1</span></div>
   <div id="gcal-status" style="font-size:11px;color:var(--muted);cursor:pointer" title="Click to sign in to Google Calendar" onclick="gcalSignIn()"></div>
-  <div id="header-status" style="font-size:12px;color:var(--muted)">Connected</div>
+
 </header>
 <nav>
   <button class="nav-btn active" data-view="new-lead">New Lead</button>
@@ -410,6 +410,9 @@ async function gcDeleteEvent(gcEventId){
     });
   }catch(e){console.warn('GCal delete error:',e)}
 }
+
+// Expose to global scope so onclick can reach it
+window.gcalSignIn=gcalSignIn;
 
 // Init Google once the GSI script loads
 window.addEventListener('load',function(){setTimeout(gcInit,500)});
