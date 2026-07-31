@@ -1,4 +1,4 @@
-<!-- Scout v0.2.2 -->
+<!-- Scout v0.3.1 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -110,10 +110,12 @@
     .modal-title{font-size:17px;font-weight:700;margin-bottom:16px}.modal-close{float:right;background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;line-height:1;margin-top:-4px}
     @media(min-width:600px){main{padding:24px 20px}}
   </style>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
 <header>
-  <div style="display:flex;align-items:center;gap:4px"><div class="logo">Scout<span>.</span></div><span class="version">v0.2.2</span></div>
+  <div style="display:flex;align-items:center;gap:4px"><div class="logo">Scout<span>.</span></div><span class="version">v0.3.1</span></div>
+  <div id="gcal-status" style="font-size:11px;color:var(--muted);cursor:pointer" title="Click to sign in to Google Calendar" onclick="gcalSignIn()"></div>
   <div id="header-status" style="font-size:12px;color:var(--muted)">Connected</div>
 </header>
 <nav>
@@ -277,7 +279,7 @@
   </div>
   <div class="card">
     <div class="card-title">About</div>
-    <div style="font-size:13px;color:var(--muted);line-height:1.8">Scout v0.2.2<br>Lead capture and survey booking - Annick Bathrooms<br>Google Calendar sync: coming in v0.3.0</div>
+    <div style="font-size:13px;color:var(--muted);line-height:1.8">Scout v0.3.1<br>Lead capture and survey booking - Annick Bathrooms<br>Google Calendar sync: active</div>
   </div>
 </div>
 </main>
@@ -312,6 +314,107 @@
 <script>
 'use strict';
 (function(){
+// ── GOOGLE CALENDAR CONFIG ────────────────────────────────────────────────
+var GC_CLIENT_ID='64991038107-s64eoqpptm4mdgf60653bn6nur5uopfb.apps.googleusercontent.com';
+var GC_CALENDAR_ID='shared@annick-bathrooms.co.uk';
+var GC_SCOPE='https://www.googleapis.com/auth/calendar.events';
+var gcAccessToken=null;
+var gcTokenExpiry=0;
+var gcTokenClient=null;
+var gcInitDone=false;
+
+function gcInit(){
+  if(gcInitDone||typeof google==='undefined')return;
+  gcInitDone=true;
+  gcTokenClient=google.accounts.oauth2.initTokenClient({
+    client_id:GC_CLIENT_ID,
+    scope:GC_SCOPE,
+    callback:function(resp){
+      if(resp.error){console.warn('GCal auth error:',resp.error);setGcalStatus('error');return}
+      gcAccessToken=resp.access_token;
+      gcTokenExpiry=Date.now()+(resp.expires_in-60)*1000;
+      setGcalStatus('connected');
+    }
+  });
+  // Auto-prompt silently — won't show popup unless token needed
+  setGcalStatus('idle');
+}
+
+function gcalSignIn(){
+  if(typeof google==='undefined'){toast('Google sign-in not available','error');return}
+  gcInit();
+  gcTokenClient.requestAccessToken({prompt:gcAccessToken?'':'consent'});
+}
+
+function setGcalStatus(state){
+  var el=g('gcal-status');if(!el)return;
+  if(state==='connected'){el.textContent='📅 Calendar linked';el.style.color='var(--success)'}
+  else if(state==='error'){el.textContent='📅 Calendar error';el.style.color='var(--danger)'}
+  else{el.textContent='📅 Sign in to link calendar';el.style.color='var(--muted)'}
+}
+
+function gcTokenReady(){
+  return gcAccessToken&&Date.now()<gcTokenExpiry;
+}
+
+async function gcEnsureToken(){
+  if(gcTokenReady())return true;
+  // Request token — this may show a popup if not already authorised
+  return new Promise(function(resolve){
+    gcInit();
+    var orig=gcTokenClient.callback;
+    gcTokenClient.callback=function(resp){
+      gcTokenClient.callback=orig;
+      if(resp.error){resolve(false);return}
+      gcAccessToken=resp.access_token;
+      gcTokenExpiry=Date.now()+(resp.expires_in-60)*1000;
+      setGcalStatus('connected');
+      resolve(true);
+    };
+    gcTokenClient.requestAccessToken({prompt:''});
+  });
+}
+
+async function gcCreateEvent(lead,surveyAt){
+  try{
+    var ok=await gcEnsureToken();
+    if(!ok){console.warn('GCal: no token, skipping event creation');return null}
+    var start=new Date(surveyAt);
+    var end=new Date(start.getTime()+cfg.slotDuration*60000);
+    var event={
+      summary:'Survey \u2014 '+lead.first_name+' '+lead.last_name+' ('+lead.postcode+')',
+      location:[lead.address,lead.town,lead.postcode].filter(Boolean).join(', '),
+      description:'Salesperson: '+lead.salesperson+'\nPhone: '+lead.phone+'\nEmail: '+(lead.email||'--')+'\nSource: '+lead.lead_source+'\nNotes: '+(lead.notes||'--'),
+      start:{dateTime:start.toISOString(),timeZone:'Europe/London'},
+      end:{dateTime:end.toISOString(),timeZone:'Europe/London'}
+    };
+    var res=await fetch('https://www.googleapis.com/calendar/v3/calendars/'+encodeURIComponent(GC_CALENDAR_ID)+'/events',{
+      method:'POST',
+      headers:{'Authorization':'Bearer '+gcAccessToken,'Content-Type':'application/json'},
+      body:JSON.stringify(event)
+    });
+    if(!res.ok){var err=await res.text();console.warn('GCal event creation failed:',err);return null}
+    var data=await res.json();
+    return data.id||null;
+  }catch(e){console.warn('GCal error:',e);return null}
+}
+
+async function gcDeleteEvent(gcEventId){
+  if(!gcEventId)return;
+  try{
+    var ok=await gcEnsureToken();
+    if(!ok)return;
+    await fetch('https://www.googleapis.com/calendar/v3/calendars/'+encodeURIComponent(GC_CALENDAR_ID)+'/events/'+encodeURIComponent(gcEventId),{
+      method:'DELETE',
+      headers:{'Authorization':'Bearer '+gcAccessToken}
+    });
+  }catch(e){console.warn('GCal delete error:',e)}
+}
+
+// Init Google once the GSI script loads
+window.addEventListener('load',function(){setTimeout(gcInit,500)});
+
+// ── SUPABASE ──────────────────────────────────────────────────────────────
 var SB_URL='https://vrujksjomkvbgwxbywzx.supabase.co';
 var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZydWprc2pvbWt2Ymd3eGJ5d3p4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUyNTAxODUsImV4cCI6MjEwMDgyNjE4NX0.WAnLBFU7YXfJWHe6k_WjQzszMEgAJP0UbzuAim43GP4';
 var AT_TOKEN='patXiRwvg4SCPKpNT.c2adcbec186642c4351b2e9ca1b10f8084a17e04d0039cc908e8b75eb54f4645';
@@ -528,14 +631,26 @@ g('btn-confirm').addEventListener('click',async function(){
   try{
     if(rescheduleId){
       await updateLead(rescheduleId,{survey_at:surveyAt,salesperson:formData.salesperson});
+      // Update calendar event if we have one
+      var existing=await sbFetch('leads?id=eq.'+rescheduleId+'&select=gcal_event_id,first_name,last_name,postcode,address,town,phone,email,lead_source,notes,salesperson');
+      if(existing[0]&&existing[0].gcal_event_id){
+        await gcDeleteEvent(existing[0].gcal_event_id);
+      }
+      var reschPayload=Object.assign({},existing[0]||{},{survey_at:surveyAt,salesperson:formData.salesperson});
+      var newGcId=await gcCreateEvent(reschPayload,surveyAt);
+      if(newGcId)await updateLead(rescheduleId,{gcal_event_id:newGcId});
       toast('Survey rescheduled!','success');
     }else{
       var sbRes=await insertLead(payload);var newId=sbRes[0]?sbRes[0].id:null;
+      // Google Calendar
+      var gcEventId=await gcCreateEvent(payload,surveyAt);
+      if(gcEventId&&newId)await updateLead(newId,{gcal_event_id:gcEventId});
+      // Airtable
       try{
         var atRes=await pushToAirtable(payload);
         if(atRes.id&&newId)await updateLead(newId,{airtable_record_id:atRes.id});
-        toast('Confirmed and synced to Airtable!','success');
-      }catch(atErr){toast('Saved to Scout - Airtable sync failed','warn')}
+        toast(gcEventId?'Confirmed — calendar and Airtable synced!':'Confirmed — Airtable synced (sign in to link calendar)','success');
+      }catch(atErr){toast(gcEventId?'Saved to Scout — calendar synced, Airtable failed':'Saved to Scout — Airtable sync failed','warn')}
     }
     resetForm();goStep(1);
     setTimeout(function(){document.querySelector('[data-view="bookings"]').click()},800);
@@ -712,7 +827,11 @@ g('pin-submit').addEventListener('click',async function(){
   }
   var btn=g('pin-submit');btn.disabled=true;btn.textContent='Deleting...';
   try{
-    // Delete from Airtable first if we have the ID
+    // Delete from Google Calendar first
+    if(deleteTarget.gcal_event_id){
+      try{await gcDeleteEvent(deleteTarget.gcal_event_id)}catch(e){console.warn('GCal delete failed:',e)}
+    }
+    // Delete from Airtable if we have the ID
     if(deleteTarget.airtable_record_id){
       try{
         await fetch('https://api.airtable.com/v0/'+AT_BASE+'/'+AT_TABLE+'/'+deleteTarget.airtable_record_id,{
