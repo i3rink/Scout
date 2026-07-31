@@ -1,4 +1,4 @@
-<!-- Scout v0.3.2 -->
+<!-- Scout v0.3.3 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -114,7 +114,7 @@
 </head>
 <body>
 <header>
-  <div style="display:flex;align-items:center;gap:4px"><div class="logo">Scout<span>.</span></div><span class="version">v0.3.2</span></div>
+  <div style="display:flex;align-items:center;gap:4px"><div class="logo">Scout<span>.</span></div><span class="version">v0.3.3</span></div>
 
 </header>
 <nav>
@@ -278,7 +278,7 @@
   </div>
   <div class="card">
     <div class="card-title">About</div>
-    <div style="font-size:13px;color:var(--muted);line-height:1.8">Scout v0.3.2<br>Lead capture and survey booking - Annick Bathrooms<br>Google Calendar sync: pending Edge Function setup</div>
+    <div style="font-size:13px;color:var(--muted);line-height:1.8">Scout v0.3.3<br>Lead capture and survey booking - Annick Bathrooms<br>Google Calendar sync: pending Edge Function setup</div>
   </div>
 </div>
 </main>
@@ -527,6 +527,23 @@ window.addEventListener('popstate',function(e){
 
 // Seed initial history state on load so first back press is caught
 history.replaceState({view:'new-lead'},'',location.href);
+
+// ── VERSION + PUSH TO HELM SUPABASE ───────────────────────────────────────
+var SCOUT_VERSION = 'v0.3.3';
+(function() {
+  var HELM_URL = 'https://xjnrmltfruzwmnhxplzn.supabase.co';
+  var HELM_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhqbnJtbHRmcnV6d21uaHhwbHpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUzMzMxNTAsImV4cCI6MjEwMDkwOTE1MH0.oDGbg7nGByR2ppjn8tYhTAz3tjUjPQkegbu40OH6Oq8';
+  fetch(HELM_URL + '/rest/v1/module_versions', {
+    method: 'POST',
+    headers: {
+      'apikey': HELM_KEY,
+      'Authorization': 'Bearer ' + HELM_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': 'resolution=merge-duplicates'
+    },
+    body: JSON.stringify({ module: 'scout', version: SCOUT_VERSION, updated_at: new Date().toISOString() })
+  }).catch(function(e) { console.warn('Version push failed:', e); });
+})();
 
 function goStep(n){
   [1,2,3].forEach(function(i){g('step-'+i).style.display=i===n?'':'none'});
