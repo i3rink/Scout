@@ -1,4 +1,4 @@
-<!-- Scout v0.3.1 -->
+<!-- Scout v0.3.2 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -114,8 +114,7 @@
 </head>
 <body>
 <header>
-  <div style="display:flex;align-items:center;gap:4px"><div class="logo">Scout<span>.</span></div><span class="version">v0.3.1</span></div>
-  <div id="gcal-status" style="font-size:11px;color:var(--muted);cursor:pointer" title="Click to sign in to Google Calendar" onclick="gcalSignIn()"></div>
+  <div style="display:flex;align-items:center;gap:4px"><div class="logo">Scout<span>.</span></div><span class="version">v0.3.2</span></div>
 
 </header>
 <nav>
@@ -279,7 +278,7 @@
   </div>
   <div class="card">
     <div class="card-title">About</div>
-    <div style="font-size:13px;color:var(--muted);line-height:1.8">Scout v0.3.1<br>Lead capture and survey booking - Annick Bathrooms<br>Google Calendar sync: active</div>
+    <div style="font-size:13px;color:var(--muted);line-height:1.8">Scout v0.3.2<br>Lead capture and survey booking - Annick Bathrooms<br>Google Calendar sync: pending Edge Function setup</div>
   </div>
 </div>
 </main>
@@ -502,12 +501,32 @@ document.querySelectorAll('.nav-btn').forEach(function(btn){
     document.querySelectorAll('.view').forEach(function(v){v.classList.remove('active')});
     btn.classList.add('active');
     g('view-'+btn.dataset.view).classList.add('active');
+    // Push history state so Android back button navigates within app
+    history.pushState({view:btn.dataset.view},'',location.href);
     if(btn.dataset.view==='calendar'){loadCalLeads().then(renderCal)}
     if(btn.dataset.view==='bookings')loadDashboard();
     if(btn.dataset.view==='history')loadHistory();
     if(btn.dataset.view==='settings')populateSettings();
   });
 });
+
+// Intercept browser back button — navigate within app instead of exiting
+window.addEventListener('popstate',function(e){
+  if(e.state&&e.state.view){
+    document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.remove('active')});
+    document.querySelectorAll('.view').forEach(function(v){v.classList.remove('active')});
+    var btn=document.querySelector('[data-view="'+e.state.view+'"]');
+    if(btn)btn.classList.add('active');
+    var view=g('view-'+e.state.view);
+    if(view)view.classList.add('active');
+  }else{
+    // No state = user is trying to exit — push a replacement so they stay in app
+    history.pushState({},'',location.href);
+  }
+});
+
+// Seed initial history state on load so first back press is caught
+history.replaceState({view:'new-lead'},'',location.href);
 
 function goStep(n){
   [1,2,3].forEach(function(i){g('step-'+i).style.display=i===n?'':'none'});
